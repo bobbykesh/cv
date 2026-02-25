@@ -271,6 +271,25 @@ footer span{color:var(--flame);font-weight:700}
 .atstips h4{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:12px}
 .tip{display:flex;gap:10px;margin-bottom:9px;align-items:flex-start;font-size:.84rem;color:var(--muted);line-height:1.55}
 
+/* ── PDF page-break rules ── */
+.cvi{page-break-inside:avoid;break-inside:avoid}
+.cvs{page-break-inside:avoid;break-inside:avoid}
+.cvir{page-break-after:avoid;break-after:avoid}
+.cvsh{page-break-after:avoid;break-after:avoid}
+@media print{
+  .cvhdr,.cvl,.stag{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+/* ── Builder AI parse overlay ── */
+.bparse-ov{display:none;position:absolute;inset:0;z-index:20;background:rgba(9,9,15,.84);backdrop-filter:blur(8px);align-items:center;justify-content:center;flex-direction:column;gap:10px}
+.bparse-ov.on{display:flex}
+.bparse-msg{font-size:.88rem;font-weight:700;color:var(--text)}
+.bparse-sub{font-size:.76rem;color:var(--muted)}
+.bkey-row{background:rgba(255,71,19,.07);border:1px solid rgba(255,71,19,.22);border-radius:var(--r);padding:12px;margin-bottom:14px}
+.bkey-row label{color:var(--flame)}
+.bkey-row p{font-size:.7rem;color:var(--muted);margin-top:5px}
+.bkey-row a{color:var(--flame);text-decoration:none}
+.btoast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--b2);color:var(--text);padding:10px 22px;border-radius:30px;font-size:.82rem;font-weight:600;z-index:500;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;box-shadow:var(--sh)}
+.btoast.show{opacity:1}
 /* ── Responsive ── */
 @media(max-width:900px){
   .blayout,.tlayout{flex-direction:column;height:auto}
@@ -367,7 +386,13 @@ footer span{color:var(--flame);font-weight:700}
   <div class="blayout">
 
     <!-- EDITOR -->
-    <div class="beditor">
+    <div class="beditor" style="position:relative">
+      <!-- AI Parse Loading Overlay -->
+      <div class="bparse-ov" id="b-parse-ov">
+        <div class="spinner"></div>
+        <div class="bparse-msg" id="b-parse-msg">Reading your CV with AI…</div>
+        <div class="bparse-sub" id="b-parse-sub">Extracting fields intelligently</div>
+      </div>
       <div class="etop">
         <h2>Edit your CV</h2>
         <div class="tabs">
@@ -381,7 +406,12 @@ footer span{color:var(--flame);font-weight:700}
       <div id="tc-personal" class="tc on">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
           <span style="font-size:.8rem;color:var(--muted)">Fill in your details</span>
-          <button class="btn bo bsm" onclick="document.getElementById('b-file').click()">↑ Upload CV</button>
+          <button class="btn bo bsm" onclick="document.getElementById('b-file').click()">⚡ AI Upload CV</button>
+        </div>
+        <div class="bkey-row" id="b-keyrow">
+          <label>Groq API Key (for AI parsing)</label>
+          <input type="password" id="b-apikey" placeholder="gsk_… (same as AI Tailor)" style="margin-top:6px" oninput="bKeyIn()">
+          <p>Free key — no card needed. <a href="https://console.groq.com/keys" target="_blank">Get key →</a> Or leave blank for basic parsing.</p>
         </div>
         <div class="fg"><label>Full Name</label><input id="b-name" placeholder="e.g. Jordan Bobbykesh" oninput="bLive()"></div>
         <div class="fg"><label>Job Title</label><input id="b-ttl" placeholder="e.g. Product Designer" oninput="bLive()"></div>
@@ -430,7 +460,7 @@ footer span{color:var(--flame);font-weight:700}
             <h1 id="p-name">Your Name</h1>
             <h2 id="p-ttl">Professional Title</h2>
             <div class="cvc">
-              <span id="p-email">email@example.com</span>
+              <span id="p-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="ee8b838f8782ae8b968f839e828bc08d8183">[email&#160;protected]</a></span>
               <span id="p-phone">Phone</span>
               <span id="p-loc">Location</span>
               <span id="p-li"></span>
@@ -663,10 +693,12 @@ footer span{color:var(--flame);font-weight:700}
 </div>
 
 
+<div class="btoast" id="btoast"></div>
+
 <!-- ══════════════════════════════
      ALL SCRIPTS
 ══════════════════════════════ -->
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── CONFIG ──────────────────────────────────
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -807,21 +839,173 @@ function bScale(){
 }
 window.addEventListener('resize',()=>{bScale();tScale();});
 
-// Upload
+// ── Builder key input handler ──────────────
+function bKeyIn(){
+  const v=document.getElementById('b-apikey').value.trim();
+  if(v.startsWith('gsk_')&&v.length>20) sessionStorage.setItem('gk',v);
+}
+
+// ── Upload — AI-powered ─────────────────────
 async function bUpload(inp){
   const f=inp.files[0];if(!f)return;
-  let txt=f.name.endsWith('.pdf')?await rdPDF(f):await rdDocx(f);
+  inp.value='';
+
+  // Check for API key (builder field first, then session, then tailor field)
+  let apiKey = document.getElementById('b-apikey')?.value.trim()
+    || sessionStorage.getItem('gk')
+    || document.getElementById('t-key')?.value.trim()
+    || '';
+
+  bParseShow('Reading file…','Extracting text from your CV');
+  let txt='';
+  try{
+    txt = f.name.endsWith('.pdf') ? await rdPDF(f) : await rdDocx(f);
+  }catch(e){ bParseHide(); bToast('❌ Could not read file — try another PDF or DOCX'); return; }
+
+  if(apiKey && apiKey.startsWith('gsk_') && apiKey.length>20){
+    // ── AI Parse path ──────────────────────
+    bParseShow('AI is reading your CV…','Identifying name, skills, experience & more');
+    try{
+      const res = await callGroq(apiKey, buildParsePrompt(txt.slice(0,10000)));
+      const raw = res?.choices?.[0]?.message?.content||'';
+      const clean = raw.replace(/```json|```/g,'').trim();
+      const s=clean.indexOf('{'), e=clean.lastIndexOf('}');
+      if(s===-1||e===-1) throw new Error('bad json');
+      const d = JSON.parse(clean.slice(s,e+1));
+      bFillFromAI(d);
+      bParseHide();
+      bToast('✓ AI extracted your CV — review & tweak the fields');
+    }catch(err){
+      bParseHide();
+      bToast('AI parse failed — falling back to basic extraction');
+      bFallbackParse(txt);
+    }
+  } else {
+    // ── Fallback regex parse ───────────────
+    bParseHide();
+    bFallbackParse(txt);
+    bToast('Basic parse done — add a Groq key above for smarter AI extraction');
+  }
+}
+
+function buildParsePrompt(txt){
+  return `Extract all information from this CV and return a single valid JSON object. No markdown, no code fences.
+
+JSON SCHEMA (use empty string "" or empty array [] if a field is not found):
+{
+  "name": "full name",
+  "email": "email address",
+  "phone": "phone number",
+  "location": "city, country",
+  "linkedin": "linkedin url or handle",
+  "jobTitle": "current or most recent job title",
+  "summary": "professional summary paragraph — extract verbatim if present, else write 2-3 sentences from their experience",
+  "skills": "comma separated list of all skills mentioned",
+  "experience": [
+    {
+      "title": "job title",
+      "co": "company name",
+      "date": "date range e.g. Jan 2020 – Mar 2023",
+      "desc": "combined bullet points or description as a single paragraph"
+    }
+  ],
+  "education": [
+    { "school": "institution name", "degree": "degree/qualification", "year": "graduation year" }
+  ],
+  "certifications": ["cert 1", "cert 2"],
+  "customTitle": "title for any other section (e.g. Projects, Languages, Awards) if present",
+  "customItems": [
+    { "title": "item title", "desc": "item description" }
+  ]
+}
+
+IMPORTANT: Extract information EXACTLY as it appears in the CV. Do not invent anything.
+
+CV TEXT:
+${txt}
+
+Return only the JSON object.`;
+}
+
+function bFillFromAI(d){
+  const set=(id,v)=>{const el=document.getElementById(id);if(el&&v)el.value=v;};
+  set('b-name',    d.name);
+  set('b-email',   d.email);
+  set('b-phone',   d.phone);
+  set('b-loc',     d.location);
+  set('b-li',      d.linkedin);
+  set('b-ttl',     d.jobTitle);
+  set('b-sum',     d.summary);
+  set('b-skl',     d.skills);
+
+  // Experience
+  BS.exp=[];
+  (d.experience||[]).forEach(e=>{
+    BS.exp.push({id:Date.now()+Math.random(),title:e.title||'',co:e.co||'',date:e.date||'',desc:e.desc||''});
+  });
+  bRExp();
+
+  // Education
+  BS.edu=[];
+  (d.education||[]).forEach(e=>{
+    BS.edu.push({id:Date.now()+Math.random(),school:e.school||'',degree:e.degree||'',year:e.year||''});
+  });
+  bREdu();
+
+  // Certifications → custom section
+  const hasCerts = d.certifications?.length>0;
+  const hasCustom = d.customItems?.length>0;
+  BS.cus=[];
+  if(hasCerts){
+    set('b-ctitle','Certifications');
+    d.certifications.forEach(c=>{BS.cus.push({id:Date.now()+Math.random(),title:c,desc:''});});
+  } else if(hasCustom){
+    set('b-ctitle',d.customTitle||'Projects');
+    d.customItems.forEach(ci=>{BS.cus.push({id:Date.now()+Math.random(),title:ci.title||'',desc:ci.desc||''});});
+  }
+  bRCus();
+
+  // Switch to personal tab so user sees the populated fields
+  bTab('personal');
+  bLive();
+}
+
+function bFallbackParse(txt){
   const em=txt.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/)?.[0]||'';
   const ph=txt.match(/((?:\+|00)[1-9][0-9 \-\(\)\.]{7,20})|(0\d[\d ]{8,12})/)?.[0]||'';
+  const li=txt.match(/linkedin\.com\/in\/[\w\-]+/i)?.[0]||'';
   const ln=txt.split('\n').map(l=>l.trim()).filter(Boolean);
   const nm=ln[0]?.split(' ').length<=5?ln[0]:'';
-  if(nm) document.getElementById('b-name').value=nm;
-  if(em) document.getElementById('b-email').value=em;
-  if(ph) document.getElementById('b-phone').value=ph;
-  document.getElementById('b-sum').value=txt.slice(0,400).replace(/\s+/g,' ').trim();
-  bLive(); inp.value='';
-  alert('CV parsed — please review and edit the extracted data.');
+  if(nm)  document.getElementById('b-name').value=nm;
+  if(em)  document.getElementById('b-email').value=em;
+  if(ph)  document.getElementById('b-phone').value=ph;
+  if(li)  document.getElementById('b-li').value=li;
+  document.getElementById('b-sum').value=txt.slice(0,500).replace(/\s+/g,' ').trim();
+  bLive();
 }
+
+function bParseShow(msg,sub){
+  document.getElementById('b-parse-msg').textContent=msg;
+  document.getElementById('b-parse-sub').textContent=sub||'';
+  document.getElementById('b-parse-ov').classList.add('on');
+}
+function bParseHide(){ document.getElementById('b-parse-ov').classList.remove('on'); }
+function bToast(msg){
+  const t=document.getElementById('btoast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// On load — restore key into builder field too
+window.addEventListener('load',()=>{
+  const k=sessionStorage.getItem('gk');
+  if(k){
+    const bk=document.getElementById('b-apikey');
+    const tk=document.getElementById('t-key');
+    if(bk&&!bk.value) bk.value=k;
+    if(tk&&!tk.value){tk.value=k;tKeyIn();}
+  }
+});
 
 // Save / Load
 function bSave(){
@@ -846,13 +1030,69 @@ function bLoadData(){
   }catch(e){}
 }
 
-// PDF
+// PDF — proper multi-page engine
 async function bDownload(){
-  const wrap=document.getElementById('b-cvwrap');
-  const prev=wrap.style.transform;wrap.style.transform='none';
-  const nm=document.getElementById('b-name').value||'CV';
-  await html2pdf().set({margin:0,filename:`${nm.replace(/\s+/g,'_')}_CV.pdf`,image:{type:'jpeg',quality:.98},html2canvas:{scale:2,useCORS:true,logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(document.getElementById('b-cv')).save();
-  wrap.style.transform=prev;
+  const dlBtn = document.querySelector('.eact .bf');
+  const origText = dlBtn.textContent;
+  dlBtn.textContent='Generating PDF…'; dlBtn.disabled=true;
+
+  const wrap = document.getElementById('b-cvwrap');
+  const cvEl = document.getElementById('b-cv');
+
+  // 1. Freeze layout — remove CSS transform so html2canvas captures at true size
+  const prevTransform    = wrap.style.transform;
+  const prevMarginBottom = wrap.style.marginBottom;
+  wrap.style.transform    = 'none';
+  wrap.style.marginBottom = '0';
+
+  // 2. Temporarily lift fixed height so content can reflow naturally
+  const prevMinH = cvEl.style.minHeight;
+  cvEl.style.minHeight = 'unset';
+
+  // 3. Force correct width (794px = A4 at 96dpi) and scroll position
+  const prevW = cvEl.style.width;
+  cvEl.style.width = '794px';
+  window.scrollTo(0,0);
+
+  const nm = (document.getElementById('b-name')?.value||'CV').replace(/\s+/g,'_');
+
+  try{
+    await html2pdf().set({
+      margin:        [0, 0, 0, 0],
+      filename:      `${nm}_CV.pdf`,
+      image:         { type:'jpeg', quality:.98 },
+      html2canvas:   {
+        scale:       2.5,
+        useCORS:     true,
+        logging:     false,
+        scrollX:     0,
+        scrollY:     0,
+        windowWidth: 794,
+        onclone:     (doc) => {
+          // In the cloned document, ensure print colours render correctly
+          const style = doc.createElement('style');
+          style.textContent = `
+            .cvhdr, .cvl, .stag, .stag.hit {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .cvi, .cvs { page-break-inside: avoid; break-inside: avoid; }
+          `;
+          doc.head.appendChild(style);
+        }
+      },
+      jsPDF:         { unit:'mm', format:'a4', orientation:'portrait', compress:true },
+      pagebreak:     { mode:['avoid-all','css','legacy'] }
+    }).from(cvEl).save();
+  } finally {
+    // 4. Restore all overridden styles
+    wrap.style.transform    = prevTransform;
+    wrap.style.marginBottom = prevMarginBottom;
+    cvEl.style.minHeight    = prevMinH;
+    cvEl.style.width        = prevW;
+    dlBtn.textContent = origText;
+    dlBtn.disabled = false;
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -918,11 +1158,6 @@ function tTogKey(){
     ico.innerHTML=`<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
   }
 }
-
-window.addEventListener('load',()=>{
-  const k=sessionStorage.getItem('gk');
-  if(k){document.getElementById('t-key').value=k;tKeyIn();}
-});
 
 function tChk(){
   const ok=tHasCV&&tHasJD&&tHasKey;
@@ -1055,12 +1290,35 @@ function tRenderScore(pct){
 
 async function tDL(){
   const btn=document.getElementById('t-dlbtn');
-  btn.textContent='Generating…';btn.disabled=true;
+  btn.textContent='Generating…'; btn.disabled=true;
   const wrap=document.getElementById('t-cvwrap');
-  const prev=wrap.style.transform;wrap.style.transform='none';
+  const cvEl=document.getElementById('t-cv');
+  const prevT=wrap.style.transform; const prevMB=wrap.style.marginBottom;
+  wrap.style.transform='none'; wrap.style.marginBottom='0';
+  cvEl.style.minHeight='unset'; cvEl.style.width='794px';
+  window.scrollTo(0,0);
   const nm=(tGen?.name||'CV').replace(/\s+/g,'_');
-  await html2pdf().set({margin:0,filename:`${nm}_Tailored.pdf`,image:{type:'jpeg',quality:.98},html2canvas:{scale:2,useCORS:true,logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(document.getElementById('t-cv')).save();
-  wrap.style.transform=prev;btn.innerHTML='↓ Download PDF';btn.disabled=false;
+  try{
+    await html2pdf().set({
+      margin:[0,0,0,0],
+      filename:`${nm}_Tailored.pdf`,
+      image:{type:'jpeg',quality:.98},
+      html2canvas:{
+        scale:2.5,useCORS:true,logging:false,scrollX:0,scrollY:0,windowWidth:794,
+        onclone:(doc)=>{
+          const s=doc.createElement('style');
+          s.textContent='.cvhdr,.cvl,.stag,.stag.hit{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}.cvi,.cvs{page-break-inside:avoid;break-inside:avoid}';
+          doc.head.appendChild(s);
+        }
+      },
+      jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},
+      pagebreak:{mode:['avoid-all','css','legacy']}
+    }).from(cvEl).save();
+  }finally{
+    wrap.style.transform=prevT; wrap.style.marginBottom=prevMB;
+    cvEl.style.minHeight=''; cvEl.style.width='';
+    btn.innerHTML='↓ Download PDF'; btn.disabled=false;
+  }
 }
 
 function tCopy(){
@@ -1158,9 +1416,4 @@ function topKws(text,n=15){
   const stop=new Set(['the','and','to','of','a','in','for','with','on','is','as','an','at','by','be','are','that','or','it','from','this','will','we','you','our','your','have','has','their','they','who','which','about','can','would','should','must','able','work','role','join','team','position','required','preferred','including','strong','proven','experience','skills','using','also','such','well','other','new','all','both','each','some','very','more','most','than','then','when','what','into','over','just','been','was','were','had','him','her','his','its']);
   const freq={};
   text.toLowerCase().replace(/[^\w\s]/g,'').split(/\s+/).forEach(w=>{if(w.length>3&&!stop.has(w))freq[w]=(freq[w]||0)+1;});
-  return Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,n).map(e=>e[0]);
-}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-</script>
-</body>
-</html>
+  re
