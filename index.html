@@ -114,6 +114,7 @@
                         <button class="tab active" onclick="switchTab('personal')">Personal</button>
                         <button class="tab" onclick="switchTab('experience')">Experience</button>
                         <button class="tab" onclick="switchTab('education')">Education</button>
+                        <button class="tab" onclick="switchTab('custom')">Custom</button>
                     </div>
                 </div>
 
@@ -161,6 +162,20 @@
                     <button class="btn btn-outline small" onclick="addEducation()">+ Add School</button>
                 </div>
 
+                <!-- Tab: Custom -->
+                <div id="tab-custom" class="form-section">
+                    <h3>Custom Sections</h3>
+                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">Add Projects, Certifications, Languages, or Skills.</p>
+                    
+                    <div class="form-group">
+                        <label>Section Title</label>
+                        <input type="text" id="input-custom-title" placeholder="e.g. Projects / Skills" oninput="updateCustomTitle()">
+                    </div>
+
+                    <div id="custom-list"></div>
+                    <button class="btn btn-outline small" onclick="addCustomItem()">+ Add Item</button>
+                </div>
+
                 <div class="editor-actions">
                     <button class="btn btn-primary full-width" onclick="downloadPDF()">
                         <i data-lucide="download"></i> Download PDF
@@ -203,6 +218,12 @@
                     <div class="cv-section">
                         <h3 class="cv-heading">Education</h3>
                         <div id="preview-education-list"></div>
+                    </div>
+
+                    <!-- Custom Section -->
+                    <div class="cv-section" id="section-custom" style="display: none;">
+                        <h3 class="cv-heading" id="preview-custom-title">Projects</h3>
+                        <div id="preview-custom-list"></div>
                     </div>
                 </div>
             </div>
