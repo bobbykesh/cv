@@ -1,0 +1,189 @@
+/* ============================================
+   MYPERFECTCV — Design System
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --primary:   #1a1a2e;
+  --secondary: #e94560;
+  --accent:    #0f3460;
+  --success:   #22c55e;
+  --warning:   #f59e0b;
+  --border:    #e2e8f0;
+  --bg:        #f8fafc;
+  --bg-alt:    #f1f5f9;
+  --text:      #1e293b;
+  --text-light:#64748b;
+  --white:     #ffffff;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.10);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.14);
+  --radius:    10px;
+  --font-display: 'Fraunces', serif;
+  --font-body:    'DM Sans', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Header ---- */
+header {
+  position: sticky; top: 0; z-index: 200;
+  background: var(--primary);
+  height: 64px;
+  display: flex; align-items: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,.2);
+}
+
+.header-content {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; max-width: 1400px; margin: 0 auto; padding: 0 24px;
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: -0.5px;
+}
+.logo .my  { color: #f1f5f9; }
+.logo .perfect { color: var(--secondary); }
+.logo .cv  { color: #94a3b8; }
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 20px; border-radius: 8px; font-weight: 600;
+  font-size: 0.9rem; cursor: pointer; transition: all .18s ease;
+  border: none; font-family: var(--font-body);
+  text-decoration: none;
+}
+.btn-primary { background: var(--secondary); color: white; }
+.btn-primary:hover { background: #d63851; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(233,69,96,.3); }
+.btn-outline { background: transparent; border: 1.5px solid rgba(255,255,255,.3); color: white; }
+.btn-outline:hover { background: rgba(255,255,255,.1); }
+.btn-ghost { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+.btn-ghost:hover { background: var(--bg-alt); }
+.full-width { width: 100%; justify-content: center; }
+
+/* ---- Spinner ---- */
+.spinner {
+  width: 44px; height: 44px;
+  border: 3px solid var(--border);
+  border-top-color: var(--secondary);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- A4 CV Page ---- */
+.a4-page {
+  width: 794px;
+  min-height: 1123px;
+  background: white;
+  box-shadow: var(--shadow-lg);
+  border-radius: 4px;
+  overflow: hidden;
+  font-family: 'Georgia', serif;
+  position: relative;
+}
+
+/* CV Typography */
+.cv-header-section {
+  background: var(--primary);
+  color: white;
+  padding: 40px 48px 32px;
+}
+.cv-header-section h1 {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.cv-header-section h2 {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #94a3b8;
+  margin-bottom: 14px;
+}
+.cv-contact-info {
+  display: flex; flex-wrap: wrap; gap: 6px 20px;
+  font-size: 0.85rem; color: #cbd5e1;
+}
+.cv-contact-info a { color: #cbd5e1; text-decoration: none; }
+.cv-contact-info a:hover { color: white; }
+
+.cv-body { display: flex; gap: 0; }
+
+.cv-sidebar-col {
+  width: 240px; min-width: 240px;
+  background: #f8fafc;
+  border-right: 1px solid var(--border);
+  padding: 28px 24px;
+}
+
+.cv-main-col { flex: 1; padding: 28px 36px 28px 28px; }
+
+.cv-section { margin-bottom: 24px; }
+
+.cv-heading {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--secondary);
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+
+.cv-item { margin-bottom: 16px; }
+.cv-item-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 2px;
+}
+.cv-item-title { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+.cv-item-date { font-size: 0.8rem; color: var(--text-light); white-space: nowrap; }
+.cv-item-subtitle { font-size: 0.85rem; color: var(--text-light); font-style: italic; margin-bottom: 6px; }
+.cv-item ul { padding-left: 18px; }
+.cv-item li { font-size: 0.88rem; line-height: 1.55; margin-bottom: 4px; color: #374151; }
+
+.skill-pill {
+  display: inline-block;
+  background: var(--primary);
+  color: white;
+  font-size: 0.78rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin: 3px 3px 3px 0;
+}
+.skill-pill.matched {
+  background: var(--secondary);
+}
+
+.cv-summary-text {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: #374151;
+}
+
+/* ---- Container ---- */
+.container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+
+/* ---- Misc ---- */
+input[type="text"], input[type="email"], textarea, select {
+  font-family: var(--font-body);
+}
