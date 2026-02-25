@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PerfectCV - Free CV Builder</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <div class="logo" onclick="showPage('home')">
+                <span style="color: var(--primary);">My</span><span style="color: var(--secondary);">Perfect</span><span style="color: var(--primary);">CV</span>
+            </div>
+            <nav>
+                <button class="btn btn-outline" onclick="showPage('builder')">Go to Builder</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- PAGE: LANDING (Home) -->
+    <main id="page-home">
+        <section class="hero">
+            <div class="container hero-content">
+                <div class="hero-text">
+                    <h1>Build your <span style="color: var(--secondary);">perfect</span> CV</h1>
+                    <p>Create a new standout CV in minutes. No sign-up required. Completely free.</p>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="showPage('builder')">Start a new CV</button>
+                    </div>
+                    <div class="badge">✨ AI-supported formatting</div>
+                </div>
+                <div class="hero-visual">
+                    <!-- CSS Resume Visual -->
+                    <div class="mini-cv-visual">
+                        <div class="cv-header"></div>
+                        <div class="cv-body">
+                            <div class="cv-line" style="width: 80%"></div>
+                            <div class="cv-line" style="width: 60%"></div>
+                            <div class="cv-block"></div>
+                            <div class="cv-block"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="container">
+                <h2>Why use this builder?</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <i data-lucide="zap"></i>
+                        <h3>Fast & Easy</h3>
+                        <p>No complex steps. Just fill in your details and see the result instantly.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i data-lucide="download"></i>
+                        <h3>Instant Export</h3>
+                        <p>Download as PDF immediately. No watermarks, no paywalls.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i data-lucide="shield"></i>
+                        <h3>Private</h3>
+                        <p>Your data is saved in your browser. We don't store anything on servers.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- PAGE: BUILDER -->
+    <main id="page-builder" style="display: none;">
+        <div class="builder-container">
+            
+            <!-- LEFT: EDITOR -->
+            <div class="editor-panel">
+                <div class="editor-header">
+                    <h2>Edit your CV</h2>
+                    <div class="tabs">
+                        <button class="tab active" onclick="switchTab('personal')">Personal</button>
+                        <button class="tab" onclick="switchTab('experience')">Experience</button>
+                        <button class="tab" onclick="switchTab('education')">Education</button>
+                    </div>
+                </div>
+
+                <!-- Tab: Personal -->
+                <div id="tab-personal" class="form-section active">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="input-name" placeholder="e.g. John Doe" oninput="updatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>Job Title</label>
+                        <input type="text" id="input-title" placeholder="e.g. Software Engineer" oninput="updatePreview()">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="input-email" placeholder="john@example.com" oninput="updatePreview()">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="text" id="input-phone" placeholder="+1 234 567 890" oninput="updatePreview()">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="input-location" placeholder="London, UK" oninput="updatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>Professional Summary</label>
+                        <textarea id="input-summary" rows="5" placeholder="Briefly describe your experience..." oninput="updatePreview()"></textarea>
+                    </div>
+                </div>
+
+                <!-- Tab: Experience -->
+                <div id="tab-experience" class="form-section">
+                    <h3>Work History</h3>
+                    <div id="experience-list">
+                        <!-- JS will inject items here -->
+                    </div>
+                    <button class="btn btn-outline small" onclick="addExperience()">+ Add Job</button>
+                </div>
+
+                <!-- Tab: Education -->
+                <div id="tab-education" class="form-section">
+                    <h3>Education</h3>
+                    <div id="education-list">
+                        <!-- JS will inject items here -->
+                    </div>
+                    <button class="btn btn-outline small" onclick="addEducation()">+ Add School</button>
+                </div>
+
+                <div class="editor-actions">
+                    <button class="btn btn-primary full-width" onclick="downloadPDF()">
+                        <i data-lucide="download"></i> Download PDF
+                    </button>
+                    <button class="btn btn-outline full-width" onclick="saveData()">
+                        <i data-lucide="save"></i> Save to Browser
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT: PREVIEW -->
+            <div class="preview-panel">
+                <div id="cv-document" class="a4-page">
+                    <!-- Header -->
+                    <div class="cv-header-section">
+                        <h1 id="preview-name">Your Name</h1>
+                        <h2 id="preview-title">Professional Title</h2>
+                        <div class="cv-contact-info">
+                            <span id="preview-email">email@example.com</span>
+                            <span class="divider">•</span>
+                            <span id="preview-phone">123-456-7890</span>
+                            <span class="divider">•</span>
+                            <span id="preview-location">City, Country</span>
+                        </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="cv-section" id="section-summary">
+                        <h3 class="cv-heading">Professional Summary</h3>
+                        <p id="preview-summary">Your professional summary will appear here. Write a short introduction about your skills and experience.</p>
+                    </div>
+
+                    <!-- Experience -->
+                    <div class="cv-section">
+                        <h3 class="cv-heading">Work Experience</h3>
+                        <div id="preview-experience-list">
+                            <!-- Dynamic Content -->
+                        </div>
+                    </div>
+
+                    <!-- Education -->
+                    <div class="cv-section">
+                        <h3 class="cv-heading">Education</h3>
+                        <div id="preview-education-list">
+                            <!-- Dynamic Content -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 PerfectCV. Built with Vanilla JS.</p>
+    </footer>
+
+    <!-- Logic -->
+    <script src="script.js"></script>
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
