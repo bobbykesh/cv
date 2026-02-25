@@ -1,249 +1,1166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PerfectCV - Free CV Builder</title>
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyPerfectCV — by Bobbykesh</title>
+<meta name="description" content="Build, tailor, and score your CV — free, private, AI-powered.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="style.css">
+<style>
+/* ═══════════════════════════════════════════
+   BOBBYKESH DESIGN SYSTEM
+═══════════════════════════════════════════ */
+:root {
+  --ink:     #09090f;
+  --surface: #111118;
+  --card:    #18181f;
+  --lift:    #202028;
+  --border:  rgba(255,255,255,.08);
+  --b2:      rgba(255,255,255,.14);
+  --flame:   #ff4713;
+  --flame2:  #ff6b3d;
+  --violet:  #7c5cfc;
+  --teal:    #00c9a7;
+  --text:    #f0eff8;
+  --muted:   #8b8a9b;
+  --ok:      #22d17a;
+  --warn:    #f5a623;
+  --r:       10px;
+  --r2:      16px;
+  --fd:      'Cormorant Garamond', serif;
+  --fb:      'Plus Jakarta Sans', sans-serif;
+  --sh:      0 8px 40px rgba(0,0,0,.5);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--ink);color:var(--text);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+/* ── Header ── */
+.hdr{position:sticky;top:0;z-index:300;background:rgba(9,9,15,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center}
+.hdr-i{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;width:100%}
+.logo{font-family:var(--fd);font-size:1.7rem;font-weight:700;cursor:pointer;letter-spacing:-.5px;user-select:none}
+.logo .l1{color:var(--text)}.logo .l2{color:var(--flame)}.logo .l3{color:var(--muted)}
+.nav{display:flex;align-items:center;gap:6px}
+.nbtn{padding:7px 16px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid var(--b2);background:transparent;color:var(--muted);font-family:var(--fb);transition:all .18s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.nbtn:hover,.nbtn.on{background:var(--card);color:var(--text)}
+.nbtn.cta{background:var(--flame);color:white;border-color:transparent}
+.nbtn.cta:hover{background:var(--flame2);transform:translateY(-1px)}
+
+/* ── Views ── */
+.view{display:none}.view.active{display:block}
+
+/* ── Shared ── */
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 12px;border-radius:20px}
+.cf{background:rgba(255,71,19,.15);color:var(--flame);border:1px solid rgba(255,71,19,.3)}
+.cv2{background:rgba(124,92,252,.15);color:var(--violet);border:1px solid rgba(124,92,252,.3)}
+.ct{background:rgba(0,201,167,.15);color:var(--teal);border:1px solid rgba(0,201,167,.3)}
+
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:var(--r);font-weight:700;font-size:.88rem;cursor:pointer;border:none;font-family:var(--fb);transition:all .18s;text-decoration:none;justify-content:center}
+.bf{background:var(--flame);color:white}
+.bf:hover{background:var(--flame2);transform:translateY(-1px);box-shadow:0 6px 20px rgba(255,71,19,.35)}
+.bg{background:transparent;border:1px solid var(--b2);color:var(--text)}
+.bg:hover{background:var(--card)}
+.bo{background:transparent;border:1px solid var(--b2);color:var(--muted)}
+.bo:hover{border-color:var(--flame);color:var(--flame)}
+.bsm{padding:6px 14px;font-size:.8rem}
+.bfw{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+input,textarea,select{font-family:var(--fb);background:var(--card);border:1px solid var(--b2);color:var(--text);border-radius:var(--r);padding:10px 12px;font-size:.88rem;transition:border-color .18s;outline:none;width:100%}
+input:focus,textarea:focus{border-color:var(--flame)}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+
+.spinner{width:40px;height:40px;border:3px solid var(--b2);border-top-color:var(--flame);border-radius:50%;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{50%{opacity:.3}}
+
+/* ═══════════════════════════════════════════
+   HOME
+═══════════════════════════════════════════ */
+.hero{position:relative;overflow:hidden;padding:100px 24px 80px;text-align:center}
+.hbg{position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 800px 500px at 50% 0%,rgba(255,71,19,.12) 0%,transparent 70%),
+             radial-gradient(ellipse 600px 400px at 80% 60%,rgba(124,92,252,.08) 0%,transparent 60%)}
+.hgrid{position:absolute;inset:0;opacity:.04;z-index:0;
+  background-image:linear-gradient(var(--b2) 1px,transparent 1px),linear-gradient(90deg,var(--b2) 1px,transparent 1px);
+  background-size:60px 60px}
+.hcon{position:relative;z-index:1;max-width:780px;margin:0 auto}
+.hh1{font-family:var(--fd);font-size:clamp(3rem,7vw,5.5rem);font-weight:700;line-height:1.05;letter-spacing:-2px;margin:24px 0}
+.hh1 em{color:var(--flame);font-style:italic}
+.hsub{font-size:1.05rem;color:var(--muted);max-width:500px;margin:0 auto 36px;line-height:1.7}
+.hbtns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.hsig{margin-top:56px;font-size:.75rem;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:10px}
+.hsig::before,.hsig::after{content:'';display:block;height:1px;width:60px;background:var(--b2)}
+
+.tools-sec{padding:60px 24px 80px;max-width:1200px;margin:0 auto}
+.sec-lbl{font-size:.68rem;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.sec-ttl{font-family:var(--fd);font-size:2.4rem;font-weight:700;letter-spacing:-1px;margin-bottom:40px}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.tcard{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:28px;cursor:pointer;transition:all .22s;position:relative;overflow:hidden}
+.tcard::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .22s;background:linear-gradient(135deg,rgba(255,71,19,.06) 0%,transparent 60%)}
+.tcard:hover{border-color:var(--b2);transform:translateY(-3px);box-shadow:var(--sh)}
+.tcard:hover::before{opacity:1}
+.tic{width:48px;height:48px;border-radius:12px;margin-bottom:20px;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.tcard h3{font-family:var(--fd);font-size:1.4rem;font-weight:700;margin-bottom:8px;letter-spacing:-.3px}
+.tcard p{font-size:.86rem;color:var(--muted);line-height:1.6;margin-bottom:20px}
+.tarrow{font-size:.82rem;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--flame)}
+
+.feats{padding:0 24px 80px;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.feat{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:22px}
+.fic{font-size:1.5rem;margin-bottom:12px}
+.feat h4{font-weight:700;margin-bottom:4px;font-size:.92rem}
+.feat p{font-size:.8rem;color:var(--muted);line-height:1.55}
+
+footer{border-top:1px solid var(--border);padding:20px 24px;text-align:center;font-size:.75rem;color:var(--muted)}
+footer span{color:var(--flame);font-weight:700}
+
+/* ═══════════════════════════════════════════
+   BUILDER
+═══════════════════════════════════════════ */
+#view-builder{height:calc(100vh - 62px)}
+.blayout{display:flex;height:100%;overflow:hidden}
+.beditor{width:42%;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
+.bprev{flex:1;background:#0d0d14;overflow-y:auto;display:flex;justify-content:center;padding:36px 24px}
+
+.etop{padding:18px 22px 14px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10}
+.etop h2{font-family:var(--fd);font-size:1.25rem;font-weight:700;margin-bottom:12px;letter-spacing:-.3px}
+.tabs{display:flex;gap:4px}
+.tab{background:none;border:1px solid transparent;padding:6px 13px;cursor:pointer;font-weight:600;color:var(--muted);border-radius:8px;font-size:.78rem;font-family:var(--fb);transition:all .15s}
+.tab:hover{color:var(--text);background:var(--lift)}
+.tab.on{color:var(--flame);border-color:rgba(255,71,19,.3);background:rgba(255,71,19,.08)}
+
+.tc{display:none;padding:18px 22px}.tc.on{display:block;animation:fadeUp .2s ease}
+.fg{margin-bottom:12px}
+.fgr{display:flex;gap:10px}.fgr .fg{flex:1}
+
+.iblk{background:var(--lift);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.iblk-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.iblk-t{font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.rmv{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.76rem;padding:2px 6px;border-radius:4px;font-family:var(--fb);transition:color .15s}
+.rmv:hover{color:var(--flame)}
+
+.eact{padding:14px 22px;border-top:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;gap:8px;margin-top:auto}
+
+/* ── A4 ── */
+.a4{width:794px;min-height:1123px;background:white;box-shadow:0 20px 80px rgba(0,0,0,.6);border-radius:3px;overflow:hidden;font-family:'Georgia',serif;transform-origin:top center}
+.cvhdr{background:#09090f;color:white;padding:38px 48px 28px}
+.cvhdr h1{font-family:var(--fd);font-size:2.3rem;font-weight:700;letter-spacing:-1px;margin-bottom:4px;color:white}
+.cvhdr h2{font-size:1rem;font-weight:400;color:#8b8a9b;text-transform:uppercase;letter-spacing:2px;margin-bottom:14px}
+.cvc{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.82rem;color:#b0afbf}
+.cvc a{color:#b0afbf;text-decoration:none}
+.cvcols{display:flex}
+.cvl{width:236px;min-width:236px;background:#f7f7fa;border-right:1px solid #e8e8ec;padding:24px 20px}
+.cvr{flex:1;padding:24px 32px 24px 24px}
+.cvs{margin-bottom:20px}
+.cvsh{font-family:var(--fb);font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:2.5px;color:#ff4713;border-bottom:2px solid #f0f0f4;padding-bottom:5px;margin-bottom:10px}
+.cvi{margin-bottom:13px}
+.cvir{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1px}
+.cvit{font-weight:700;font-size:.88rem;color:#09090f}
+.cvid{font-size:.74rem;color:#8b8a9b;white-space:nowrap}
+.cvis{font-size:.8rem;color:#6b6b7b;font-style:italic;margin-bottom:5px}
+.cvi ul{padding-left:16px}
+.cvi li{font-size:.83rem;line-height:1.55;margin-bottom:3px;color:#2d2d3a}
+.cvp{font-size:.86rem;line-height:1.65;color:#2d2d3a}
+.stag{display:inline-block;background:#09090f;color:white;font-size:.7rem;padding:3px 9px;border-radius:20px;margin:2px 2px 2px 0;font-family:var(--fb)}
+.stag.hit{background:#ff4713}
+
+/* ═══════════════════════════════════════════
+   AI TAILOR
+═══════════════════════════════════════════ */
+#view-tailor{height:calc(100vh - 62px)}
+.tlayout{display:flex;height:100%;overflow:hidden}
+.tside{width:360px;min-width:360px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.tmain{flex:1;background:#0d0d14;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:36px 24px;position:relative}
+.shdr{padding:18px 22px 14px;border-bottom:1px solid var(--border)}
+.shdr h2{font-family:var(--fd);font-size:1.2rem;font-weight:700;letter-spacing:-.3px;margin-bottom:3px}
+.shdr p{font-size:.76rem;color:var(--muted)}
+.sstep{padding:16px 22px;border-bottom:1px solid var(--border)}
+.slbl{display:flex;align-items:center;gap:10px;font-size:.7rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.sn{width:20px;height:20px;border-radius:50%;flex-shrink:0;background:var(--lift);border:1px solid var(--b2);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;transition:all .2s}
+.sn.done{background:var(--ok);border-color:var(--ok);color:#09090f}
+.dz{border:2px dashed var(--b2);border-radius:var(--r);padding:18px;text-align:center;cursor:pointer;transition:all .18s}
+.dz:hover,.dz.over{border-color:var(--flame);background:rgba(255,71,19,.04)}
+.dz.loaded{border-style:solid;border-color:var(--ok);background:rgba(34,209,122,.04)}
+.dz svg{width:24px;height:24px;color:var(--muted);margin-bottom:6px}
+.dz.loaded svg{color:var(--ok)}
+.dz p{font-size:.82rem;color:var(--muted)}
+.dz .dn{font-weight:700;color:var(--text)}
+.jdta{height:145px;resize:vertical;font-size:.82rem;line-height:1.5}
+.cc{font-size:.72rem;color:var(--muted);text-align:right;margin-top:4px}
+.kww{margin-top:10px}
+.kwr{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.kw{font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--lift);color:var(--muted);border:1px solid var(--border)}
+.kw.hit{background:rgba(255,71,19,.1);color:var(--flame);border-color:rgba(255,71,19,.3);font-weight:700}
+.kyw{position:relative}.kyw input{padding-right:40px}
+.kye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:2px}
+.kyn{font-size:.72rem;color:var(--muted);margin-top:6px;display:flex;align-items:flex-start;gap:5px;line-height:1.5}
+.kyn a{color:var(--flame);text-decoration:none}
+.gbtn{width:100%;padding:13px;border:none;border-radius:var(--r);font-size:.9rem;font-weight:800;font-family:var(--fb);cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;background:linear-gradient(135deg,var(--flame) 0%,#c73600 100%);letter-spacing:.3px}
+.gbtn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,71,19,.4)}
+.gbtn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.sbar{padding:8px 22px;font-size:.76rem;color:var(--muted);display:flex;align-items:center;gap:8px;min-height:34px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ok);flex-shrink:0}
+.dot.pls{background:var(--warn);animation:pulse 1s infinite}
+.dot.err{background:var(--flame)}
+.sfoot{margin-top:auto;padding:14px 22px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.ebanner{display:none;background:rgba(255,71,19,.08);border:1px solid rgba(255,71,19,.25);color:#ff8b6f;border-radius:var(--r);padding:10px 14px;font-size:.82rem;margin:0 22px 10px;align-items:flex-start;gap:8px}
+.ebanner.on{display:flex}
+.ldo{display:none;position:absolute;inset:0;z-index:50;background:rgba(13,13,20,.86);backdrop-filter:blur(8px);align-items:center;justify-content:center;flex-direction:column}
+.ldo.on{display:flex}
+.ldc{background:var(--card);border:1px solid var(--b2);border-radius:20px;padding:34px 42px;text-align:center;max-width:300px}
+.ldc h3{font-family:var(--fd);font-size:1.25rem;margin:16px 0 5px}
+.ldc p{font-size:.82rem;color:var(--muted)}
+.ldsteps{margin-top:18px;text-align:left;display:flex;flex-direction:column;gap:9px}
+.ldst{display:flex;align-items:center;gap:10px;font-size:.78rem;color:var(--muted);transition:color .3s}
+.ldst.act{color:var(--text);font-weight:700}
+.ldst.done{color:var(--ok)}
+.ldst svg{width:15px;height:15px;flex-shrink:0}
+.sbadge{display:none;position:fixed;bottom:24px;right:24px;z-index:200;background:var(--card);border:1px solid var(--b2);border-radius:14px;padding:12px 18px;box-shadow:var(--sh);align-items:center;gap:14px}
+.sbadge.on{display:flex}
+.sring{width:50px;height:50px;position:relative}
+.sring svg{width:50px;height:50px;transform:rotate(-90deg)}
+.strk{fill:none;stroke:var(--lift);stroke-width:4}
+.sarc{fill:none;stroke:var(--ok);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
+.sarc.mid{stroke:var(--warn)}.sarc.low{stroke:var(--flame)}
+.slb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:800}
+.si .sp{font-size:1.1rem;font-weight:800}
+.si .ss{font-size:.72rem;color:var(--muted)}
+.est{text-align:center;color:var(--muted);max-width:320px;padding:80px 0}
+.est svg{width:54px;height:54px;margin-bottom:18px;opacity:.25}
+.est h3{font-family:var(--fd);font-size:1.35rem;color:var(--text);margin-bottom:8px}
+.est p{font-size:.84rem;line-height:1.6}
+.cvwrap{transform-origin:top center}
+
+/* ═══════════════════════════════════════════
+   ATS CHECKER
+═══════════════════════════════════════════ */
+#view-ats{min-height:calc(100vh - 62px)}
+.atspage{max-width:940px;margin:0 auto;padding:48px 24px 80px}
+.atspage h2{font-family:var(--fd);font-size:2.2rem;font-weight:700;letter-spacing:-1px;margin-bottom:8px}
+.atspage>p{color:var(--muted);margin-bottom:36px;font-size:.92rem}
+.atsinp{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.atsta{height:220px;resize:vertical}
+.atsul{display:block;border:2px dashed var(--b2);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;transition:all .18s;margin-bottom:8px;font-size:.8rem;color:var(--muted)}
+.atsul:hover{border-color:var(--flame);color:var(--flame)}
+.atscard{display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:28px;margin-bottom:22px;animation:fadeUp .3s ease}
+.atscard.on{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+.atsring{width:110px;height:110px;position:relative;flex-shrink:0}
+.atsring svg{width:110px;height:110px;transform:rotate(-90deg)}
+.artrk{fill:none;stroke:var(--lift);stroke-width:7}
+.ararc{fill:none;stroke:var(--ok);stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .8s ease}
+.ararc.mid{stroke:var(--warn)}.ararc.low{stroke:var(--flame)}
+.arlab{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.arlab span{font-size:1.5rem;font-weight:800}
+.arlab small{font-size:.65rem;color:var(--muted);font-weight:600}
+.atsinfo h3{font-family:var(--fd);font-size:1.4rem;font-weight:700;margin-bottom:5px}
+.atsinfo p{color:var(--muted);font-size:.86rem;line-height:1.6}
+.atskw{margin-bottom:20px}
+.atskwh{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px}
+.kwgrid{display:flex;flex-wrap:wrap;gap:7px}
+.akw{font-size:.78rem;padding:3px 11px;border-radius:20px;font-weight:600}
+.akw.found{background:rgba(34,209,122,.12);color:var(--ok);border:1px solid rgba(34,209,122,.3)}
+.akw.miss{background:rgba(255,71,19,.1);color:var(--flame);border:1px solid rgba(255,71,19,.25)}
+.atstips{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:22px}
+.atstips h4{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:12px}
+.tip{display:flex;gap:10px;margin-bottom:9px;align-items:flex-start;font-size:.84rem;color:var(--muted);line-height:1.55}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .blayout,.tlayout{flex-direction:column;height:auto}
+  .beditor,.tside{width:100%;min-width:0}
+  .bprev{min-height:60vh}
+  .tmain{min-height:70vh}
+  .cvwrap{transform:none!important}
+  .atsinp{grid-template-columns:1fr}
+  .hh1{font-size:2.8rem}
+  .sbadge{bottom:12px;right:12px}
+}
+</style>
 </head>
 <body>
 
-    <!-- Header -->
-    <header>
-        <div class="container header-content">
-            <div class="logo" onclick="showPage('home')">
-                <span style="color: var(--primary);">My</span><span style="color: var(--secondary);">Perfect</span><span style="color: var(--primary);">CV</span>
-            </div>
-            <nav style="display: flex; gap: 10px;">
-                <a href="ats.html" class="btn btn-outline" style="text-decoration: none;">ATS Check</a>
-                <a href="ai-builder.html" class="btn btn-outline" style="text-decoration: none;">AI Tailor</a>
-                <a href="ai-pro.html" class="btn btn-primary" style="background: gold; color: black; border: 1px solid black;">AI Builder PRO</a>
-                <button class="btn btn-primary" onclick="showPage('builder')">Go to Builder</button>
-            </nav>
+<!-- ═══════ HEADER ═══════ -->
+<header class="hdr">
+  <div class="hdr-i">
+    <div class="logo" onclick="go('home')">
+      <span class="l1">My</span><span class="l2">Perfect</span><span class="l3">CV</span>
+    </div>
+    <nav class="nav">
+      <button class="nbtn on"  id="n-home"    onclick="go('home')">Home</button>
+      <button class="nbtn"     id="n-builder" onclick="go('builder')">Builder</button>
+      <button class="nbtn"     id="n-tailor"  onclick="go('tailor')">AI Tailor</button>
+      <button class="nbtn"     id="n-ats"     onclick="go('ats')">ATS Check</button>
+    </nav>
+  </div>
+</header>
+
+
+<!-- ══════════════════════════════
+     HOME
+══════════════════════════════ -->
+<div id="view-home" class="view active">
+  <div class="hero">
+    <div class="hbg"></div><div class="hgrid"></div>
+    <div class="hcon">
+      <span class="chip cf">✦ Free · Private · No Sign-up</span>
+      <h1 class="hh1">Build your<br><em>perfect</em> CV</h1>
+      <p class="hsub">Create, tailor, and score your CV against any job description — everything runs in your browser. Zero data leaves your device.</p>
+      <div class="hbtns">
+        <button class="btn bf" onclick="go('builder')" style="padding:14px 32px;font-size:.95rem;">✦ Start Building</button>
+        <button class="btn bg" onclick="go('tailor')"  style="padding:14px 32px;font-size:.95rem;">AI Tailor →</button>
+      </div>
+      <div class="hsig">Designed by Bobbykesh</div>
+    </div>
+  </div>
+
+  <div class="tools-sec">
+    <div class="sec-lbl">What you can do</div>
+    <div class="sec-ttl">Three tools, one place.</div>
+    <div class="tgrid">
+      <div class="tcard" onclick="go('builder')">
+        <div class="tic" style="background:rgba(124,92,252,.12)">📝</div>
+        <span class="chip cv2" style="margin-bottom:12px;font-size:.65rem">Free</span>
+        <h3>CV Builder</h3>
+        <p>Build from scratch with a live preview. Fill your details and download a polished PDF.</p>
+        <div class="tarrow">Open Builder →</div>
+      </div>
+      <div class="tcard" onclick="go('tailor')">
+        <div class="tic" style="background:rgba(255,71,19,.12)">⚡</div>
+        <span class="chip cf" style="margin-bottom:12px;font-size:.65rem">AI · Free</span>
+        <h3>AI CV Tailor</h3>
+        <p>Upload your CV, paste a job description, and let Llama 3 rewrite your bullets for that specific role.</p>
+        <div class="tarrow">Open Tailor →</div>
+      </div>
+      <div class="tcard" onclick="go('ats')">
+        <div class="tic" style="background:rgba(0,201,167,.12)">🎯</div>
+        <span class="chip ct" style="margin-bottom:12px;font-size:.65rem">Instant</span>
+        <h3>ATS Checker</h3>
+        <p>See which keywords match the job description, which are missing, and your overall fit score.</p>
+        <div class="tarrow">Open ATS Check →</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feats">
+    <div class="feat"><div class="fic">🔒</div><h4>100% Private</h4><p>Everything runs in your browser. No server, no accounts, no data stored anywhere.</p></div>
+    <div class="feat"><div class="fic">🆓</div><h4>Completely Free</h4><p>AI uses Groq's free tier (Llama 3). No credit card. 14,400 req/day free.</p></div>
+    <div class="feat"><div class="fic">📄</div><h4>PDF Export</h4><p>Download a clean, ATS-friendly A4 PDF ready to submit to any employer.</p></div>
+    <div class="feat"><div class="fic">💾</div><h4>Browser Save</h4><p>Your CV data persists in localStorage so it's there next time you open the page.</p></div>
+  </div>
+
+  <footer>Built with care by <span>Bobbykesh</span> · MyPerfectCV · 2024</footer>
+</div>
+
+
+<!-- ══════════════════════════════
+     BUILDER
+══════════════════════════════ -->
+<div id="view-builder" class="view">
+  <input type="file" id="b-file" accept=".pdf,.docx" style="display:none" onchange="bUpload(this)">
+  <div class="blayout">
+
+    <!-- EDITOR -->
+    <div class="beditor">
+      <div class="etop">
+        <h2>Edit your CV</h2>
+        <div class="tabs">
+          <button class="tab on"  data-t="personal"   onclick="bTab('personal')">Personal</button>
+          <button class="tab"     data-t="experience" onclick="bTab('experience')">Experience</button>
+          <button class="tab"     data-t="education"  onclick="bTab('education')">Education</button>
+          <button class="tab"     data-t="custom"     onclick="bTab('custom')">Custom</button>
         </div>
-    </header>
+      </div>
 
-    <!-- Hidden File Input -->
-    <input type="file" id="cv-upload" accept=".pdf,.docx" style="display: none;" onchange="handleFileUpload(this)">
-
-    <!-- PAGE: LANDING (Home) -->
-    <main id="page-home">
-        <section class="hero">
-            <div class="container hero-content">
-                <div class="hero-text">
-                    <h1>Build your <span style="color: var(--secondary);">perfect</span> CV</h1>
-                    <p>Create a new standout CV in minutes. No sign-up required. Completely free.</p>
-                    <div class="btn-group">
-                        <button class="btn btn-primary" onclick="showPage('builder')">Start New CV</button>
-                        <button class="btn btn-outline" onclick="document.getElementById('cv-upload').click()">
-                            <i data-lucide="upload"></i> Upload CV & Revamp
-                        </button>
-                    </div>
-                    <div class="badge">✨ AI-supported formatting</div>
-                </div>
-                <div class="hero-visual">
-                    <div class="mini-cv-visual">
-                        <div class="cv-header"></div>
-                        <div class="cv-body">
-                            <div class="cv-line" style="width: 80%"></div>
-                            <div class="cv-line" style="width: 60%"></div>
-                            <div class="cv-block"></div>
-                            <div class="cv-block"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Loader -->
-        <div id="loader" class="loader-overlay" style="display: none;">
-            <div class="spinner"></div>
-            <p>Analyzing your CV...</p>
+      <div id="tc-personal" class="tc on">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <span style="font-size:.8rem;color:var(--muted)">Fill in your details</span>
+          <button class="btn bo bsm" onclick="document.getElementById('b-file').click()">↑ Upload CV</button>
         </div>
+        <div class="fg"><label>Full Name</label><input id="b-name" placeholder="e.g. Jordan Bobbykesh" oninput="bLive()"></div>
+        <div class="fg"><label>Job Title</label><input id="b-ttl" placeholder="e.g. Product Designer" oninput="bLive()"></div>
+        <div class="fgr">
+          <div class="fg"><label>Email</label><input type="email" id="b-email" placeholder="you@email.com" oninput="bLive()"></div>
+          <div class="fg"><label>Phone</label><input id="b-phone" placeholder="+44 7700 000000" oninput="bLive()"></div>
+        </div>
+        <div class="fgr">
+          <div class="fg"><label>Location</label><input id="b-loc" placeholder="London, UK" oninput="bLive()"></div>
+          <div class="fg"><label>LinkedIn</label><input id="b-li" placeholder="linkedin.com/in/you" oninput="bLive()"></div>
+        </div>
+        <div class="fg"><label>Professional Summary</label>
+          <textarea id="b-sum" rows="5" placeholder="3–4 sentences about your experience…" oninput="bLive()"></textarea></div>
+        <div class="fg"><label>Key Skills (comma separated)</label>
+          <input id="b-skl" placeholder="React, Figma, Python, Leadership" oninput="bLive()"></div>
+      </div>
 
-        <section class="features">
-            <div class="container">
-                <h2>Why use this builder?</h2>
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <i data-lucide="zap"></i>
-                        <h3>Fast & Easy</h3>
-                        <p>No complex steps. Just fill in your details and see the result instantly.</p>
-                    </div>
-                    <div class="feature-card">
-                        <i data-lucide="scan-line"></i>
-                        <h3>ATS Optimized</h3>
-                        <p>Use our new ATS checker tool to match your CV against job descriptions.</p>
-                    </div>
-                    <div class="feature-card">
-                        <i data-lucide="shield"></i>
-                        <h3>Private</h3>
-                        <p>Your data is saved in your browser. We don't store anything on servers.</p>
-                    </div>
-                </div>
+      <div id="tc-experience" class="tc">
+        <div id="b-exp-list"></div>
+        <button class="btn bo bsm bfw" onclick="bAddExp()">+ Add Experience</button>
+      </div>
+
+      <div id="tc-education" class="tc">
+        <div id="b-edu-list"></div>
+        <button class="btn bo bsm bfw" onclick="bAddEdu()">+ Add Education</button>
+      </div>
+
+      <div id="tc-custom" class="tc">
+        <div class="fg"><label>Section Title</label>
+          <input id="b-ctitle" placeholder="Skills / Projects / Certifications" oninput="bLive()"></div>
+        <div id="b-cus-list"></div>
+        <button class="btn bo bsm bfw" onclick="bAddCus()">+ Add Item</button>
+      </div>
+
+      <div class="eact">
+        <button class="btn bf bfw" onclick="bDownload()">↓ Download PDF</button>
+        <button class="btn bg bfw" onclick="bSave()">💾 Save to Browser</button>
+      </div>
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="bprev" id="bprev-area">
+      <div id="b-cvwrap" style="transform-origin:top center">
+        <div id="b-cv" class="a4">
+          <div class="cvhdr">
+            <h1 id="p-name">Your Name</h1>
+            <h2 id="p-ttl">Professional Title</h2>
+            <div class="cvc">
+              <span id="p-email">email@example.com</span>
+              <span id="p-phone">Phone</span>
+              <span id="p-loc">Location</span>
+              <span id="p-li"></span>
             </div>
-        </section>
+          </div>
+          <div class="cvcols">
+            <div class="cvl">
+              <div class="cvs" id="p-skl-sec">
+                <div class="cvsh">Skills</div>
+                <div id="p-skl"></div>
+              </div>
+              <div class="cvs">
+                <div class="cvsh">Education</div>
+                <div id="p-edu"></div>
+              </div>
+            </div>
+            <div class="cvr">
+              <div class="cvs" id="p-sum-sec">
+                <div class="cvsh">Professional Summary</div>
+                <p id="p-sum" class="cvp"></p>
+              </div>
+              <div class="cvs">
+                <div class="cvsh">Work Experience</div>
+                <div id="p-exp"></div>
+              </div>
+              <div class="cvs" id="p-cus-sec" style="display:none">
+                <div class="cvsh" id="p-ctitle">Projects</div>
+                <div id="p-cus"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════
+     AI TAILOR
+══════════════════════════════ -->
+<div id="view-tailor" class="view">
+  <input type="file" id="t-file" accept=".pdf,.docx" style="display:none">
+  <div class="tlayout">
+
+    <aside class="tside">
+      <div class="shdr">
+        <h2>AI CV Tailor</h2>
+        <p>3 steps · free · private</p>
+      </div>
+
+      <div class="sstep">
+        <div class="slbl"><span class="sn" id="ts1">1</span>Upload your CV</div>
+        <div class="dz" id="t-dz"
+             onclick="document.getElementById('t-file').click()"
+             ondragover="tDrag(event,'o')" ondragleave="tDrag(event,'l')" ondrop="tDrop(event)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M4 16.5v1.5a2 2 0 002 2h12a2 2 0 002-2v-1.5M16 12l-4-4-4 4M12 8v9"/>
+          </svg>
+          <p id="t-dzlbl">Click or drag PDF / DOCX</p>
+        </div>
+      </div>
+
+      <div class="sstep">
+        <div class="slbl"><span class="sn" id="ts2">2</span>Paste Job Description</div>
+        <textarea id="t-jd" class="jdta" placeholder="Paste the full job description here…" oninput="tJDIn()"></textarea>
+        <div class="cc"><span id="t-cc">0</span> characters</div>
+        <div id="t-kww" class="kww" style="display:none">
+          <div style="font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)">Keywords</div>
+          <div class="kwr" id="t-kws"></div>
+        </div>
+      </div>
+
+      <div class="sstep">
+        <div class="slbl"><span class="sn" id="ts3">3</span>Free Groq API Key</div>
+        <div class="kyw">
+          <input type="password" id="t-key" placeholder="gsk_…" autocomplete="off" oninput="tKeyIn()">
+          <button class="kye" onclick="tTogKey()">
+            <svg id="t-eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+        <p class="kyn">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:2px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Free · no card needed · key stays in browser only.
+          <a href="https://console.groq.com/keys" target="_blank">Get key →</a>
+        </p>
+      </div>
+
+      <div class="ebanner" id="t-err"><span id="t-errtxt">Error.</span></div>
+
+      <div class="sstep" style="border:none;padding-top:0">
+        <button id="t-gbtn" class="gbtn" onclick="tGen()" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          Generate Tailored CV
+        </button>
+      </div>
+
+      <div class="sbar">
+        <span class="dot" id="t-dot"></span>
+        <span id="t-stat">Upload a CV and paste a job description.</span>
+      </div>
+
+      <div class="sfoot">
+        <button class="btn bg bfw" id="t-dlbtn" onclick="tDL()" disabled>↓ Download PDF</button>
+        <button class="btn bo bfw" id="t-cpbtn" onclick="tCopy()" disabled style="font-size:.76rem">Copy Plain Text</button>
+      </div>
+    </aside>
+
+    <main class="tmain" id="t-main">
+      <div class="ldo" id="t-ldo">
+        <div class="ldc">
+          <div class="spinner"></div>
+          <h3>Crafting your CV…</h3>
+          <p>Llama 3 is rewriting your experience</p>
+          <div class="ldsteps">
+            <div class="ldst" id="ls1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>Parsing your CV</div>
+            <div class="ldst" id="ls2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Analysing requirements</div>
+            <div class="ldst" id="ls3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Tailoring & rewriting</div>
+            <div class="ldst" id="ls4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Scoring match</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sbadge" id="t-sb">
+        <div class="sring">
+          <svg viewBox="0 0 50 50">
+            <circle class="strk" cx="25" cy="25" r="21"/>
+            <circle class="sarc" id="t-arc" cx="25" cy="25" r="21" stroke-dasharray="131.95" stroke-dashoffset="131.95"/>
+          </svg>
+          <div class="slb" id="t-slb">0%</div>
+        </div>
+        <div class="si">
+          <div class="sp" id="t-spct">0%</div>
+          <div class="ss">Match Score</div>
+        </div>
+      </div>
+
+      <div id="t-empty" class="est">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        <h3>Your tailored CV appears here</h3>
+        <p>Upload your CV, paste the JD, add your free Groq key, then hit Generate.</p>
+      </div>
+
+      <div id="t-cvwrap" class="cvwrap" style="display:none">
+        <div id="t-cv" class="a4">
+          <div class="cvhdr">
+            <h1 id="t-cn">Full Name</h1>
+            <h2 id="t-ct">Job Title</h2>
+            <div class="cvc">
+              <span id="t-ce"></span><span id="t-cp"></span>
+              <span id="t-cl"></span><span id="t-cli"></span>
+            </div>
+          </div>
+          <div class="cvcols">
+            <div class="cvl">
+              <div class="cvs"><div class="cvsh">Skills</div><div id="t-cskl"></div></div>
+              <div class="cvs"><div class="cvsh">Education</div><div id="t-cedu"></div></div>
+              <div class="cvs" id="t-ccerts" style="display:none"><div class="cvsh">Certifications</div><div id="t-certl"></div></div>
+            </div>
+            <div class="cvr">
+              <div class="cvs"><div class="cvsh">Professional Summary</div><p id="t-csum" class="cvp"></p></div>
+              <div class="cvs"><div class="cvsh">Experience</div><div id="t-cexp"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
+  </div>
+</div>
 
-    <!-- PAGE: BUILDER -->
-    <main id="page-builder" style="display: none;">
-        <div class="builder-container">
-            
-            <!-- LEFT: EDITOR -->
-            <div class="editor-panel">
-                <div class="editor-header">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h2>Edit your CV</h2>
-                        <button class="btn btn-outline small" onclick="document.getElementById('cv-upload').click()">
-                            <i data-lucide="upload" style="width: 14px;"></i> Upload
-                        </button>
-                    </div>
-                    <div class="tabs">
-                        <button class="tab active" data-target="personal" onclick="switchTab('personal')">Personal</button>
-                        <button class="tab" data-target="experience" onclick="switchTab('experience')">Experience</button>
-                        <button class="tab" data-target="education" onclick="switchTab('education')">Education</button>
-                        <button class="tab" data-target="custom" onclick="switchTab('custom')">Custom</button>
-                    </div>
-                </div>
 
-                <!-- Tab: Personal -->
-                <div id="tab-personal" class="form-section active">
-                    <div class="form-group">
-                        <label>Full Name</label>
-                        <input type="text" id="input-name" placeholder="e.g. John Doe" oninput="updatePreview()">
-                    </div>
-                    <div class="form-group">
-                        <label>Job Title</label>
-                        <input type="text" id="input-title" placeholder="e.g. Software Engineer" oninput="updatePreview()">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" id="input-email" placeholder="john@example.com" oninput="updatePreview()">
-                        </div>
-                        <div class="form-group">
-                            <label>Phone</label>
-                            <input type="text" id="input-phone" placeholder="+1 234 567 890" oninput="updatePreview()">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Location</label>
-                        <input type="text" id="input-location" placeholder="London, UK" oninput="updatePreview()">
-                    </div>
-                    <div class="form-group">
-                        <label>Professional Summary</label>
-                        <textarea id="input-summary" rows="5" placeholder="Briefly describe your experience..." oninput="updatePreview()"></textarea>
-                    </div>
-                </div>
+<!-- ══════════════════════════════
+     ATS CHECKER
+══════════════════════════════ -->
+<div id="view-ats" class="view">
+  <input type="file" id="ats-file" accept=".pdf,.docx" style="display:none" onchange="atsUp(this)">
+  <div class="atspage">
+    <span class="chip ct" style="margin-bottom:12px">ATS Checker</span>
+    <h2>How well does your CV match?</h2>
+    <p>Paste your CV text and a job description. Get a keyword match score instantly.</p>
 
-                <!-- Tab: Experience -->
-                <div id="tab-experience" class="form-section">
-                    <h3>Work History</h3>
-                    <div id="experience-list"></div>
-                    <button class="btn btn-outline small" onclick="addExperience()">+ Add Job</button>
-                </div>
+    <div class="atsinp">
+      <div>
+        <label>Your CV Text</label>
+        <label class="atsul" for="ats-file">↑ Upload PDF / DOCX to auto-fill</label>
+        <textarea id="ats-cv" class="atsta" placeholder="Or paste your CV text here…"></textarea>
+      </div>
+      <div>
+        <label>Job Description</label>
+        <textarea id="ats-jd" class="atsta" placeholder="Paste the full job description here…" style="margin-top:46px"></textarea>
+      </div>
+    </div>
 
-                <!-- Tab: Education -->
-                <div id="tab-education" class="form-section">
-                    <h3>Education</h3>
-                    <div id="education-list"></div>
-                    <button class="btn btn-outline small" onclick="addEducation()">+ Add School</button>
-                </div>
+    <button class="btn bf" style="margin-bottom:28px;padding:12px 28px" onclick="runATS()">✦ Analyse Match</button>
 
-                <!-- Tab: Custom -->
-                <div id="tab-custom" class="form-section">
-                    <h3>Custom Section</h3>
-                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">Add Skills, Projects, Languages, or Awards.</p>
-                    
-                    <div class="form-group">
-                        <label>Section Title</label>
-                        <input type="text" id="input-custom-title" placeholder="e.g. Skills / Projects" oninput="updateCustomTitle()">
-                    </div>
-
-                    <div id="custom-list">
-                        <!-- Custom items will appear here -->
-                    </div>
-                    
-                    <button class="btn btn-outline small" onclick="addCustomItem()">+ Add Item</button>
-                </div>
-
-                <div class="editor-actions">
-                    <button class="btn btn-primary full-width" onclick="downloadPDF()">
-                        <i data-lucide="download"></i> Download PDF
-                    </button>
-                    <button class="btn btn-outline full-width" onclick="saveData()">
-                        <i data-lucide="save"></i> Save to Browser
-                    </button>
-                </div>
-            </div>
-
-            <!-- RIGHT: PREVIEW -->
-            <div class="preview-panel">
-                <div id="cv-document" class="a4-page">
-                    <!-- Header -->
-                    <div class="cv-header-section">
-                        <h1 id="preview-name">Your Name</h1>
-                        <h2 id="preview-title">Professional Title</h2>
-                        <div class="cv-contact-info">
-                            <span id="preview-email">email@example.com</span>
-                            <span class="divider">•</span>
-                            <span id="preview-phone">123-456-7890</span>
-                            <span class="divider">•</span>
-                            <span id="preview-location">City, Country</span>
-                        </div>
-                    </div>
-
-                    <!-- Summary -->
-                    <div class="cv-section" id="section-summary">
-                        <h3 class="cv-heading">Professional Summary</h3>
-                        <p id="preview-summary">Your professional summary will appear here. Write a short introduction about your skills and experience.</p>
-                    </div>
-
-                    <!-- Experience -->
-                    <div class="cv-section">
-                        <h3 class="cv-heading">Work Experience</h3>
-                        <div id="preview-experience-list"></div>
-                    </div>
-
-                    <!-- Education -->
-                    <div class="cv-section">
-                        <h3 class="cv-heading">Education</h3>
-                        <div id="preview-education-list"></div>
-                    </div>
-
-                    <!-- Custom Section (CRITICAL: MUST HAVE THIS ID) -->
-                    <div class="cv-section" id="section-custom" style="display: none;">
-                        <h3 class="cv-heading" id="preview-custom-title">Projects</h3>
-                        <div id="preview-custom-list"></div>
-                    </div>
-                </div>
-            </div>
+    <div id="ats-res" style="display:none;animation:fadeUp .3s ease">
+      <div class="atscard on" id="ats-card">
+        <div class="atsring">
+          <svg viewBox="0 0 110 110">
+            <circle class="artrk" cx="55" cy="55" r="48"/>
+            <circle class="ararc" id="ats-arc" cx="55" cy="55" r="48" stroke-dasharray="301.59" stroke-dashoffset="301.59"/>
+          </svg>
+          <div class="arlab"><span id="ats-pct">0%</span><small>Match</small></div>
         </div>
-    </main>
+        <div class="atsinfo">
+          <h3 id="ats-verd">Analysing…</h3>
+          <p id="ats-vsub"></p>
+        </div>
+      </div>
 
-    <footer>
-        <p>&copy; 2024 PerfectCV. Built with Vanilla JS.</p>
-    </footer>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px">
+        <div class="atskw"><div class="atskwh">✅ Keywords Found</div><div class="kwgrid" id="ats-found"></div></div>
+        <div class="atskw"><div class="atskwh">❌ Missing Keywords</div><div class="kwgrid" id="ats-miss"></div></div>
+      </div>
 
-    <!-- Logic -->
-    <script src="script.js"></script>
-    <script>
-        lucide.createIcons();
-    </script>
+      <div class="atstips">
+        <h4>💡 How to Improve</h4>
+        <div id="ats-tips"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════
+     ALL SCRIPTS
+══════════════════════════════ -->
+<script>
+// ── CONFIG ──────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const GROQ_API   = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
+
+// ── NAVIGATION ──────────────────────────────
+function go(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nbtn').forEach(el => el.classList.remove('on'));
+  document.getElementById('view-'+v).classList.add('active');
+  const nb = document.getElementById('n-'+v);
+  if (nb) nb.classList.add('on');
+  window.scrollTo(0,0);
+  if (v==='builder') { bLoadData(); setTimeout(bScale,60); }
+}
+
+// ═══════════════════════════════════════════
+// BUILDER STATE
+// ═══════════════════════════════════════════
+const BS = { exp:[], edu:[], cus:[] };
+
+function bTab(name) {
+  document.querySelectorAll('.tc').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('tc-'+name).classList.add('on');
+  document.querySelector(`.tab[data-t="${name}"]`).classList.add('on');
+}
+
+function bLive() {
+  const g = id => document.getElementById(id)?.value||'';
+  const s = (id,v) => { const e=document.getElementById(id); if(e) e.innerText=v; };
+  s('p-name',  g('b-name')||'Your Name');
+  s('p-ttl',   g('b-ttl')||'Professional Title');
+  s('p-email', g('b-email')||'');
+  s('p-phone', g('b-phone')||'');
+  s('p-loc',   g('b-loc')||'');
+  document.getElementById('p-li').innerText = g('b-li');
+  const sumEl = document.getElementById('p-sum');
+  if(sumEl) sumEl.innerText = g('b-sum');
+  document.getElementById('p-sum-sec').style.display = g('b-sum') ? '' : 'none';
+  const skls = g('b-skl').split(',').map(s=>s.trim()).filter(Boolean);
+  document.getElementById('p-skl').innerHTML = skls.map(s=>`<span class="stag">${esc(s)}</span>`).join('');
+  document.getElementById('p-skl-sec').style.display = skls.length ? '' : 'none';
+  const ct = g('b-ctitle');
+  document.getElementById('p-cus-sec').style.display=(ct&&BS.cus.length)?'':'none';
+  document.getElementById('p-ctitle').innerText = ct||'Projects';
+}
+
+// Experience
+function bAddExp(){BS.exp.push({id:Date.now(),title:'',co:'',date:'',desc:''});bRExp();}
+function bUpdExp(id,f,v){const x=BS.exp.find(e=>e.id===id);if(x){x[f]=v;bRExpPrev();}}
+function bDelExp(id){BS.exp=BS.exp.filter(e=>e.id!==id);bRExp();}
+function bRExp(){
+  const c=document.getElementById('b-exp-list');c.innerHTML='';
+  BS.exp.forEach((e,i)=>{
+    const d=document.createElement('div');d.className='iblk';
+    d.innerHTML=`<div class="iblk-h"><span class="iblk-t">Job ${i+1}</span><button class="rmv" onclick="bDelExp(${e.id})">✕ Remove</button></div>
+      <div class="fg"><input placeholder="Job Title" value="${esc(e.title)}" oninput="bUpdExp(${e.id},'title',this.value)"></div>
+      <div class="fg"><input placeholder="Company" value="${esc(e.co)}" oninput="bUpdExp(${e.id},'co',this.value)"></div>
+      <div class="fg"><input placeholder="Dates e.g. Jan 2022 – Present" value="${esc(e.date)}" oninput="bUpdExp(${e.id},'date',this.value)"></div>
+      <div class="fg"><textarea rows="3" placeholder="Responsibilities, achievements…" oninput="bUpdExp(${e.id},'desc',this.value)">${esc(e.desc)}</textarea></div>`;
+    c.appendChild(d);
+  });
+  bRExpPrev();
+}
+function bRExpPrev(){
+  const c=document.getElementById('p-exp');c.innerHTML='';
+  BS.exp.forEach(e=>{
+    const d=document.createElement('div');d.className='cvi';
+    d.innerHTML=`<div class="cvir"><span class="cvit">${esc(e.title)}</span><span class="cvid">${esc(e.date)}</span></div>
+      <div class="cvis">${esc(e.co)}</div>
+      <p style="font-size:.82rem;line-height:1.55;color:#2d2d3a">${esc(e.desc).replace(/\n/g,'<br>')}</p>`;
+    c.appendChild(d);
+  });
+}
+
+// Education
+function bAddEdu(){BS.edu.push({id:Date.now(),school:'',degree:'',year:''});bREdu();}
+function bUpdEdu(id,f,v){const x=BS.edu.find(e=>e.id===id);if(x){x[f]=v;bREduPrev();}}
+function bDelEdu(id){BS.edu=BS.edu.filter(e=>e.id!==id);bREdu();}
+function bREdu(){
+  const c=document.getElementById('b-edu-list');c.innerHTML='';
+  BS.edu.forEach((e,i)=>{
+    const d=document.createElement('div');d.className='iblk';
+    d.innerHTML=`<div class="iblk-h"><span class="iblk-t">Education ${i+1}</span><button class="rmv" onclick="bDelEdu(${e.id})">✕ Remove</button></div>
+      <div class="fg"><input placeholder="University / School" value="${esc(e.school)}" oninput="bUpdEdu(${e.id},'school',this.value)"></div>
+      <div class="fg"><input placeholder="Degree / Qualification" value="${esc(e.degree)}" oninput="bUpdEdu(${e.id},'degree',this.value)"></div>
+      <div class="fg"><input placeholder="Year" value="${esc(e.year)}" oninput="bUpdEdu(${e.id},'year',this.value)"></div>`;
+    c.appendChild(d);
+  });
+  bREduPrev();
+}
+function bREduPrev(){
+  const c=document.getElementById('p-edu');c.innerHTML='';
+  BS.edu.forEach(e=>{
+    const d=document.createElement('div');d.className='cvi';
+    d.innerHTML=`<div class="cvir"><span class="cvit">${esc(e.school)}</span><span class="cvid">${esc(e.year)}</span></div>
+      <div class="cvis">${esc(e.degree)}</div>`;
+    c.appendChild(d);
+  });
+}
+
+// Custom
+function bAddCus(){BS.cus.push({id:Date.now(),title:'',desc:''});bRCus();}
+function bUpdCus(id,f,v){const x=BS.cus.find(e=>e.id===id);if(x){x[f]=v;bRCusPrev();}}
+function bDelCus(id){BS.cus=BS.cus.filter(e=>e.id!==id);bRCus();}
+function bRCus(){
+  const c=document.getElementById('b-cus-list');c.innerHTML='';
+  BS.cus.forEach((e,i)=>{
+    const d=document.createElement('div');d.className='iblk';
+    d.innerHTML=`<div class="iblk-h"><span class="iblk-t">Item ${i+1}</span><button class="rmv" onclick="bDelCus(${e.id})">✕ Remove</button></div>
+      <div class="fg"><input placeholder="Title" value="${esc(e.title)}" oninput="bUpdCus(${e.id},'title',this.value)"></div>
+      <div class="fg"><textarea rows="2" placeholder="Details…" oninput="bUpdCus(${e.id},'desc',this.value)">${esc(e.desc)}</textarea></div>`;
+    c.appendChild(d);
+  });
+  bRCusPrev();
+}
+function bRCusPrev(){
+  const c=document.getElementById('p-cus');c.innerHTML='';
+  BS.cus.forEach(e=>{
+    const d=document.createElement('div');d.className='cvi';
+    d.innerHTML=`<div class="cvir"><span class="cvit">${esc(e.title)}</span></div>
+      <p style="font-size:.82rem;line-height:1.55;color:#2d2d3a">${esc(e.desc).replace(/\n/g,'<br>')}</p>`;
+    c.appendChild(d);
+  });
+  bLive();
+}
+
+// Scale
+function bScale(){
+  const wrap=document.getElementById('b-cvwrap');
+  const area=document.getElementById('bprev-area');
+  if(!wrap||!area)return;
+  const s=Math.min(1,(area.clientWidth-48)/794);
+  wrap.style.transform=`scale(${s})`;
+  wrap.style.marginBottom=`-${794*(1-s)*.35}px`;
+}
+window.addEventListener('resize',()=>{bScale();tScale();});
+
+// Upload
+async function bUpload(inp){
+  const f=inp.files[0];if(!f)return;
+  let txt=f.name.endsWith('.pdf')?await rdPDF(f):await rdDocx(f);
+  const em=txt.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/)?.[0]||'';
+  const ph=txt.match(/((?:\+|00)[1-9][0-9 \-\(\)\.]{7,20})|(0\d[\d ]{8,12})/)?.[0]||'';
+  const ln=txt.split('\n').map(l=>l.trim()).filter(Boolean);
+  const nm=ln[0]?.split(' ').length<=5?ln[0]:'';
+  if(nm) document.getElementById('b-name').value=nm;
+  if(em) document.getElementById('b-email').value=em;
+  if(ph) document.getElementById('b-phone').value=ph;
+  document.getElementById('b-sum').value=txt.slice(0,400).replace(/\s+/g,' ').trim();
+  bLive(); inp.value='';
+  alert('CV parsed — please review and edit the extracted data.');
+}
+
+// Save / Load
+function bSave(){
+  const d={};
+  ['b-name','b-ttl','b-email','b-phone','b-loc','b-li','b-sum','b-skl','b-ctitle']
+    .forEach(id=>{d[id]=document.getElementById(id)?.value||'';});
+  d.exp=BS.exp;d.edu=BS.edu;d.cus=BS.cus;
+  localStorage.setItem('bkCV',JSON.stringify(d));
+  const btn=event.target;btn.textContent='✓ Saved!';
+  setTimeout(()=>btn.textContent='💾 Save to Browser',2000);
+}
+function bLoadData(){
+  const raw=localStorage.getItem('bkCV');if(!raw)return;
+  try{
+    const d=JSON.parse(raw);
+    ['b-name','b-ttl','b-email','b-phone','b-loc','b-li','b-sum','b-skl','b-ctitle']
+      .forEach(id=>{const el=document.getElementById(id);if(el&&d[id])el.value=d[id];});
+    if(d.exp){BS.exp=d.exp;bRExp();}
+    if(d.edu){BS.edu=d.edu;bREdu();}
+    if(d.cus){BS.cus=d.cus;bRCus();}
+    bLive();
+  }catch(e){}
+}
+
+// PDF
+async function bDownload(){
+  const wrap=document.getElementById('b-cvwrap');
+  const prev=wrap.style.transform;wrap.style.transform='none';
+  const nm=document.getElementById('b-name').value||'CV';
+  await html2pdf().set({margin:0,filename:`${nm.replace(/\s+/g,'_')}_CV.pdf`,image:{type:'jpeg',quality:.98},html2canvas:{scale:2,useCORS:true,logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(document.getElementById('b-cv')).save();
+  wrap.style.transform=prev;
+}
+
+// ═══════════════════════════════════════════
+// AI TAILOR
+// ═══════════════════════════════════════════
+let tRaw='', tHasCV=false, tHasJD=false, tHasKey=false, tGen=null;
+
+document.getElementById('t-file').addEventListener('change',async e=>{
+  const f=e.target.files[0];if(f)await tProc(f);
+});
+
+function tDrag(e,t){e.preventDefault();document.getElementById('t-dz').classList.toggle('over',t==='o');}
+function tDrop(e){e.preventDefault();document.getElementById('t-dz').classList.remove('over');const f=e.dataTransfer.files[0];if(f)tProc(f);}
+
+async function tProc(file){
+  const lbl=document.getElementById('t-dzlbl');
+  if(!file.name.match(/\.(pdf|docx)$/i)){tErr('Only PDF and DOCX supported.');return;}
+  lbl.textContent='Reading…';
+  try{
+    tRaw=file.name.endsWith('.pdf')?await rdPDF(file):await rdDocx(file);
+    tRaw=tRaw.trim().slice(0,16000);tHasCV=true;
+    const dz=document.getElementById('t-dz');
+    dz.classList.add('loaded');
+    dz.querySelector('svg').innerHTML=`<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>`;
+    document.getElementById('t-dzlbl').innerHTML=`<span class="dn">✓ ${file.name}</span>`;
+    document.getElementById('ts1').classList.add('done');
+    tStat('CV loaded — paste a job description.','');
+    tHideErr();tChk();
+  }catch(e){tErr('Could not read file — try another PDF or DOCX.');lbl.textContent='Click or drag PDF / DOCX';}
+}
+
+function tJDIn(){
+  const v=document.getElementById('t-jd').value;
+  document.getElementById('t-cc').textContent=v.length;
+  tHasJD=v.trim().length>50;
+  if(tHasJD){document.getElementById('ts2').classList.add('done');tShowKws(v);tHideErr();}
+  else{document.getElementById('ts2').classList.remove('done');document.getElementById('t-kww').style.display='none';}
+  tChk();
+}
+
+function tShowKws(txt){
+  const kws=topKws(txt,12);
+  document.getElementById('t-kws').innerHTML=kws.map(k=>`<span class="kw ${tRaw.toLowerCase().includes(k)?'hit':''}">${k}</span>`).join('');
+  document.getElementById('t-kww').style.display='block';
+}
+
+function tKeyIn(){
+  const v=document.getElementById('t-key').value.trim();
+  tHasKey=v.startsWith('gsk_')&&v.length>20;
+  document.getElementById('ts3').classList.toggle('done',tHasKey);
+  if(tHasKey){sessionStorage.setItem('gk',v);tHideErr();}
+  tChk();
+}
+
+function tTogKey(){
+  const inp=document.getElementById('t-key');
+  const ico=document.getElementById('t-eye');
+  if(inp.type==='password'){
+    inp.type='text';
+    ico.innerHTML=`<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22"/>`;
+  }else{
+    inp.type='password';
+    ico.innerHTML=`<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+  }
+}
+
+window.addEventListener('load',()=>{
+  const k=sessionStorage.getItem('gk');
+  if(k){document.getElementById('t-key').value=k;tKeyIn();}
+});
+
+function tChk(){
+  const ok=tHasCV&&tHasJD&&tHasKey;
+  document.getElementById('t-gbtn').disabled=!ok;
+  if(ok)tStat('Ready — hit Generate!','');
+}
+
+async function tGenerate(){
+  tHideErr();
+  const jd=document.getElementById('t-jd').value.trim().slice(0,4000);
+  const cv=tRaw.slice(0,8000);
+  const key=document.getElementById('t-key').value.trim();
+  tLoad(true);tLS('ls1','act');
+  try{
+    tLS('ls1','done');tLS('ls2','act');
+    const res=await callGroq(key,buildPrompt(cv,jd));
+    tLS('ls2','done');tLS('ls3','act');
+    const data=parseRes(res);
+    tLS('ls3','done');tLS('ls4','act');
+    tRenderCV(data);tRenderScore(data.matchScore||70);
+    tLS('ls4','done');
+    tGen=data;
+    document.getElementById('t-dlbtn').disabled=false;
+    document.getElementById('t-cpbtn').disabled=false;
+    tStat('CV generated successfully!','');
+  }catch(e){
+    tErr(tFriendly(e));tStat('Generation failed.','err');
+  }finally{tLoad(false);tReset();}
+}
+
+async function callGroq(key,prompt){
+  const r=await fetch(GROQ_API,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+    body:JSON.stringify({model:GROQ_MODEL,max_tokens:2048,temperature:0.25,
+      messages:[
+        {role:'system',content:'You are an expert CV writer. Respond with valid JSON only — no markdown, no code fences, no preamble.'},
+        {role:'user',content:prompt}
+      ]})
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${r.status}`);}
+  return r.json();
+}
+
+function buildPrompt(cv,jd){
+  return `Tailor this candidate's CV to the job description. Return ONLY valid JSON — no markdown, no code fences.
+
+JSON SCHEMA:
+{"name":"","email":"","phone":"","location":"","linkedin":"","targetTitle":"exact job title from JD",
+"summary":"3 sentences, keyword-rich, references company goals if mentioned",
+"skills":[{"name":"","matched":true}],
+"experience":[{"title":"","company":"","dates":"","bullets":["action verb + metrics"]}],
+"education":[{"degree":"","school":"","year":""}],
+"certifications":[""],
+"matchScore":0,
+"missingKeywords":[""]}
+
+RULES: Keep all contact info exactly as in CV. Never invent experience. Rewrite bullets to match JD with strong action verbs. matched:true only if skill appears in JD. matchScore 0-100 (honest: 50-65=partial, 66-80=good, 81+=excellent).
+
+CANDIDATE CV:
+${cv}
+
+JOB DESCRIPTION:
+${jd}
+
+Return only the JSON.`;
+}
+
+function parseRes(res){
+  let txt=res?.choices?.[0]?.message?.content||'';
+  txt=txt.replace(/```json|```/g,'').trim();
+  const s=txt.indexOf('{'),e=txt.lastIndexOf('}');
+  if(s===-1||e===-1)throw new Error('Unexpected format — please try again.');
+  return JSON.parse(txt.slice(s,e+1));
+}
+
+function tRenderCV(d){
+  document.getElementById('t-empty').style.display='none';
+  document.getElementById('t-cvwrap').style.display='block';
+  document.getElementById('t-cn').textContent=d.name||'';
+  document.getElementById('t-ct').textContent=d.targetTitle||'';
+  document.getElementById('t-ce').textContent=d.email||'';
+  document.getElementById('t-cp').textContent=d.phone||'';
+  document.getElementById('t-cl').textContent=d.location||'';
+  const li=document.getElementById('t-cli');
+  if(d.linkedin){const h=d.linkedin.replace(/https?:\/\/(www\.)?linkedin\.com\/in\//i,'');li.innerHTML=`<a href="${d.linkedin}" target="_blank">li/${h}</a>`;}
+  else li.textContent='';
+  ['t-ce','t-cp','t-cl','t-cli'].forEach(id=>{const el=document.getElementById(id);el.style.display=(el.textContent||el.innerHTML)?'':'none';});
+  document.getElementById('t-csum').textContent=d.summary||'';
+  document.getElementById('t-cskl').innerHTML=(d.skills||[]).map(s=>`<span class="stag ${s.matched?'hit':''}">${esc(s.name)}</span>`).join('');
+  const expEl=document.getElementById('t-cexp');expEl.innerHTML='';
+  (d.experience||[]).forEach(j=>{
+    const div=document.createElement('div');div.className='cvi';
+    div.innerHTML=`<div class="cvir"><span class="cvit">${esc(j.title)}</span><span class="cvid">${esc(j.dates||'')}</span></div>
+      <div class="cvis">${esc(j.company||'')}</div>
+      <ul>${(j.bullets||[]).map(b=>`<li>${esc(b)}</li>`).join('')}</ul>`;
+    expEl.appendChild(div);
+  });
+  const eduEl=document.getElementById('t-cedu');eduEl.innerHTML='';
+  (d.education||[]).forEach(e=>{
+    const div=document.createElement('div');div.style.marginBottom='10px';
+    div.innerHTML=`<div style="font-weight:700;font-size:.84rem;color:#09090f">${esc(e.degree||'')}</div>
+      <div style="font-size:.78rem;color:#6b6b7b">${esc(e.school||'')}</div>
+      <div style="font-size:.74rem;color:#8b8a9b">${esc(e.year||'')}</div>`;
+    eduEl.appendChild(div);
+  });
+  const certs=d.certifications||[];
+  if(certs.length){document.getElementById('t-ccerts').style.display='';document.getElementById('t-certl').innerHTML=certs.map(c=>`<div style="font-size:.78rem;margin-bottom:4px">• ${esc(c)}</div>`).join('');}
+  tScale();
+}
+
+function tScale(){
+  const wrap=document.getElementById('t-cvwrap');
+  const area=document.getElementById('t-main');
+  if(!wrap||!area)return;
+  const s=Math.min(1,(area.clientWidth-48)/794);
+  wrap.style.transform=`scale(${s})`;
+  wrap.style.marginBottom=`-${794*(1-s)*.3}px`;
+}
+
+function tRenderScore(pct){
+  const arc=document.getElementById('t-arc');
+  const c=131.95;
+  arc.style.strokeDashoffset=c-(c*pct/100);
+  arc.className=`sarc${pct>=75?'':pct>=55?' mid':' low'}`;
+  document.getElementById('t-slb').textContent=`${pct}%`;
+  document.getElementById('t-spct').textContent=`${pct}%`;
+  document.getElementById('t-sb').classList.add('on');
+}
+
+async function tDL(){
+  const btn=document.getElementById('t-dlbtn');
+  btn.textContent='Generating…';btn.disabled=true;
+  const wrap=document.getElementById('t-cvwrap');
+  const prev=wrap.style.transform;wrap.style.transform='none';
+  const nm=(tGen?.name||'CV').replace(/\s+/g,'_');
+  await html2pdf().set({margin:0,filename:`${nm}_Tailored.pdf`,image:{type:'jpeg',quality:.98},html2canvas:{scale:2,useCORS:true,logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(document.getElementById('t-cv')).save();
+  wrap.style.transform=prev;btn.innerHTML='↓ Download PDF';btn.disabled=false;
+}
+
+function tCopy(){
+  if(!tGen)return;const d=tGen;
+  let txt=`${d.name}\n${d.targetTitle}\n${d.email} | ${d.phone} | ${d.location}\n\nSUMMARY\n${d.summary}\n\nSKILLS\n${(d.skills||[]).map(s=>s.name).join(', ')}\n\nEXPERIENCE\n`;
+  (d.experience||[]).forEach(j=>{txt+=`${j.title} — ${j.company} (${j.dates})\n`;(j.bullets||[]).forEach(b=>txt+=`  • ${b}\n`);txt+='\n';});
+  txt+=`EDUCATION\n`;(d.education||[]).forEach(e=>txt+=`${e.degree}, ${e.school} (${e.year})\n`);
+  navigator.clipboard.writeText(txt).then(()=>{const b=document.getElementById('t-cpbtn');b.textContent='✓ Copied!';setTimeout(()=>b.textContent='Copy Plain Text',2000);});
+}
+
+// UI helpers
+function tStat(msg,type){
+  document.getElementById('t-stat').textContent=msg;
+  const d=document.getElementById('t-dot');
+  d.className=`dot${type==='err'?' err':type==='pls'?' pls':''}`;
+}
+function tErr(msg){document.getElementById('t-errtxt').textContent=msg;document.getElementById('t-err').classList.add('on');}
+function tHideErr(){document.getElementById('t-err').classList.remove('on');}
+function tLoad(on){document.getElementById('t-ldo').classList.toggle('on',on);document.getElementById('t-gbtn').disabled=on;if(on)tStat('Generating…','pls');}
+function tLS(id,st){const el=document.getElementById(id);if(!el)return;el.className=`ldst ${st}`;if(st==='done')el.querySelector('svg').innerHTML=`<polyline points="20 6 9 17 4 12"/>`;}
+function tReset(){['ls1','ls2','ls3','ls4'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='ldst';});}
+function tFriendly(e){
+  const m=e.message||'';
+  if(m.includes('401')||m.includes('Unauthorized'))return 'Invalid API key — check console.groq.com.';
+  if(m.includes('429')||m.includes('rate'))return 'Rate limit hit. Wait a moment and retry.';
+  if(m.includes('format'))return m;
+  return `Error: ${m}`;
+}
+
+// Bind onclick for generate (avoids naming conflict with tGen variable)
+document.getElementById('t-gbtn').onclick = tGenerate;
+
+// ═══════════════════════════════════════════
+// ATS CHECKER
+// ═══════════════════════════════════════════
+async function atsUp(inp){
+  const f=inp.files[0];if(!f)return;
+  const txt=f.name.endsWith('.pdf')?await rdPDF(f):await rdDocx(f);
+  document.getElementById('ats-cv').value=txt.slice(0,6000);
+  inp.value='';
+}
+
+function runATS(){
+  const cvTxt=document.getElementById('ats-cv').value.trim();
+  const jdTxt=document.getElementById('ats-jd').value.trim();
+  if(!cvTxt||!jdTxt){alert('Please provide both your CV text and a job description.');return;}
+  const kws=topKws(jdTxt,35);
+  const cvl=cvTxt.toLowerCase();
+  const found=kws.filter(k=>cvl.includes(k));
+  const miss=kws.filter(k=>!cvl.includes(k));
+  const pct=Math.round((found.length/Math.max(kws.length,1))*100);
+  // arc: circumference of r=48 ≈ 301.59
+  const arc=document.getElementById('ats-arc');
+  const c=301.59;
+  arc.style.strokeDashoffset=c-(c*pct/100);
+  arc.className=`ararc${pct>=70?'':pct>=45?' mid':' low'}`;
+  document.getElementById('ats-pct').textContent=`${pct}%`;
+  const verd=pct>=80?'Excellent Match 🎉':pct>=65?'Good Match ✅':pct>=45?'Partial Match ⚡':'Low Match ❌';
+  const vsub=pct>=80?'Your CV is well-aligned. Strong application ready to submit.':pct>=65?'Good match. Add a few missing keywords to strengthen it further.':pct>=45?'Some relevant experience but key terms are missing from your CV.':'Significant tailoring needed. Focus on the missing keywords below.';
+  document.getElementById('ats-verd').textContent=verd;
+  document.getElementById('ats-vsub').textContent=vsub;
+  document.getElementById('ats-found').innerHTML=found.map(k=>`<span class="akw found">${k}</span>`).join('');
+  document.getElementById('ats-miss').innerHTML=miss.slice(0,20).map(k=>`<span class="akw miss">${k}</span>`).join('');
+  const tips=[];
+  if(miss.length>0)tips.push(`Weave these keywords in naturally: <strong>${miss.slice(0,5).join(', ')}</strong>`);
+  if(pct<60)tips.push('Rewrite your summary to mirror the exact job title and core requirements.');
+  tips.push('Use exact phrases from the JD — ATS systems often match literal strings, not just topics.');
+  tips.push('Quantify achievements wherever possible: numbers and percentages boost relevance signals.');
+  if(miss.length>8)tips.push('Try the <strong>AI Tailor</strong> tool — it auto-rewrites your entire CV for this specific role.');
+  document.getElementById('ats-tips').innerHTML=tips.map(t=>`<div class="tip"><span style="flex-shrink:0;color:var(--flame)">→</span><span>${t}</span></div>`).join('');
+  document.getElementById('ats-res').style.display='block';
+  document.getElementById('ats-res').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ═══════════════════════════════════════════
+// SHARED UTILS
+// ═══════════════════════════════════════════
+async function rdPDF(file){
+  const buf=await file.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+  let txt='';
+  for(let i=1;i<=pdf.numPages;i++){
+    const page=await pdf.getPage(i);
+    const tc=await page.getTextContent();
+    txt+=tc.items.map(it=>it.str).join(' ')+'\n';
+  }
+  return txt;
+}
+async function rdDocx(file){
+  const buf=await file.arrayBuffer();
+  const r=await mammoth.extractRawText({arrayBuffer:buf});
+  return r.value;
+}
+function topKws(text,n=15){
+  const stop=new Set(['the','and','to','of','a','in','for','with','on','is','as','an','at','by','be','are','that','or','it','from','this','will','we','you','our','your','have','has','their','they','who','which','about','can','would','should','must','able','work','role','join','team','position','required','preferred','including','strong','proven','experience','skills','using','also','such','well','other','new','all','both','each','some','very','more','most','than','then','when','what','into','over','just','been','was','were','had','him','her','his','its']);
+  const freq={};
+  text.toLowerCase().replace(/[^\w\s]/g,'').split(/\s+/).forEach(w=>{if(w.length>3&&!stop.has(w))freq[w]=(freq[w]||0)+1;});
+  return Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,n).map(e=>e[0]);
+}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+</script>
 </body>
 </html>
