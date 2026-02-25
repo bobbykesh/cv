@@ -1412,8 +1412,20 @@ async function rdDocx(file){
   const r=await mammoth.extractRawText({arrayBuffer:buf});
   return r.value;
 }
-function topKws(text,n=15){
-  const stop=new Set(['the','and','to','of','a','in','for','with','on','is','as','an','at','by','be','are','that','or','it','from','this','will','we','you','our','your','have','has','their','they','who','which','about','can','would','should','must','able','work','role','join','team','position','required','preferred','including','strong','proven','experience','skills','using','also','such','well','other','new','all','both','each','some','very','more','most','than','then','when','what','into','over','just','been','was','were','had','him','her','his','its']);
-  const freq={};
-  text.toLowerCase().replace(/[^\w\s]/g,'').split(/\s+/).forEach(w=>{if(w.length>3&&!stop.has(w))freq[w]=(freq[w]||0)+1;});
-  re
+function topKws(text, n = 15) {
+  const stop = new Set([
+    'the', 'and', 'to', 'of', 'a', 'in', 'for', 'with', 'on', 'is', 'as', 'an', 'at', 'by', 'be', 'are',
+    'that', 'or', 'it', 'from', 'this', 'will', 'we', 'you', 'our', 'your', 'have', 'has', 'their', 'they',
+    'who', 'which', 'about', 'can', 'would', 'should', 'must', 'able', 'work', 'role', 'join', 'team',
+    'position', 'required', 'preferred', 'including', 'strong', 'proven', 'experience', 'skills', 'using',
+    'also', 'such', 'well', 'other', 'new', 'all', 'both', 'each', 'some', 'very', 'more', 'most', 'than',
+    'then', 'when', 'what', 'into', 'over', 'just', 'been', 'was', 'were', 'had', 'him', 'her', 'his', 'its'
+  ]);
+  const freq = {};
+  text.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).forEach(w => {
+    if (w.length > 3 && !stop.has(w)) freq[w] = (freq[w] || 0) + 1;
+  });
+  return Object.keys(freq)
+    .sort((a, b) => freq[b] - freq[a])
+    .slice(0, n);
+}
