@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Builder Pro - PerfectCV</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Domine:wght@400;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Parsing & PDF Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        .pro-container { display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Left: Config Panel */
+        .config-panel { width: 400px; background: white; border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; z-index: 10; box-shadow: 2px 0 10px rgba(0,0,0,0.05); }
+        
+        .config-group { background: var(--bg-alt); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .config-group label { font-weight: 800; font-size: 0.9rem; display: block; margin-bottom: 8px; color: var(--primary); }
+        
+        .api-input-group { display: flex; gap: 5px; }
+        .api-input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 0.8rem; }
+        
+        textarea.pro-input { width: 100%; height: 120px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 0.9rem; resize: vertical; }
+        
+        .generate-btn {
+            background: linear-gradient(135deg, #000000, #434343);
+            color: #FFD700; /* Gold text */
+            border: 1px solid #FFD700;
+            padding: 15px; border-radius: 8px; font-weight: 800; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: 0.3s; margin-top: 10px;
+        }
+        .generate-btn:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+        .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Right: Preview Panel */
+        .preview-area { flex: 1; background: #525659; display: flex; justify-content: center; padding: 40px; overflow-y: auto; position: relative; }
+        
+        /* The Perfect Paper */
+        .resume-paper {
+            width: 210mm; min-height: 297mm; background: white; padding: 0; 
+            box-shadow: 0 0 25px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column;
+        }
+
+        /* Modern Template CSS */
+        .tpl-header { background: var(--primary); color: white; padding: 30px; }
+        .tpl-name { font-family: 'Domine', serif; font-size: 2.5rem; text-transform: uppercase; letter-spacing: 1px; }
+        .tpl-role { font-family: 'Nunito', sans-serif; font-size: 1.2rem; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; opacity: 0.9; }
+        .tpl-contact { margin-top: 15px; font-size: 0.9rem; display: flex; gap: 15px; opacity: 0.8; }
+        
+        .tpl-body { padding: 30px; display: flex; gap: 30px; }
+        .tpl-left { width: 65%; border-right: 1px solid #eee; padding-right: 20px; }
+        .tpl-right { width: 35%; }
+
+        .tpl-section { margin-bottom: 25px; }
+        .tpl-heading { font-size: 1.1rem; text-transform: uppercase; color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 5px; margin-bottom: 15px; font-weight: 800; letter-spacing: 1px; }
+        
+        .tpl-job { margin-bottom: 15px; }
+        .tpl-job-head { display: flex; justify-content: space-between; font-weight: 700; font-size: 1rem; }
+        .tpl-job-sub { font-style: italic; color: #666; font-size: 0.9rem; margin-bottom: 5px; }
+        .tpl-list { padding-left: 15px; font-size: 0.95rem; line-height: 1.5; color: #333; }
+        .tpl-list li { margin-bottom: 4px; }
+
+        .tpl-skill-tag { display: inline-block; background: #f0f4f8; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; color: var(--primary); margin: 0 5px 5px 0; font-weight: 600; }
+
+        /* Loader */
+        .pro-loader { position: absolute; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; flex-direction: column; color: white; z-index: 50; }
+        .spinner-gold { width: 50px; height: 50px; border: 4px solid #333; border-top: 4px solid #FFD700; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        .status-log { font-family: monospace; color: #FFD700; margin-top: 10px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <div class="pro-container">
+        <!-- CONFIGURATION PANEL -->
+        <aside class="config-panel">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; cursor: pointer;" onclick="window.location.href='index.html'">
+                <i data-lucide="arrow-left"></i> <strong>Back to Home</strong>
+            </div>
+            
+            <h2 style="font-family: 'Domine'; font-size: 1.8rem;">AI Builder <span style="color: var(--accent);">Pro</span></h2>
+            <p style="font-size: 0.9rem; color: #666;">Powered by Z.ai / LLM Technology</p>
+
+            <!-- Step 1: API Key -->
+            <div class="config-group">
+                <label>1. API Configuration</label>
+                <div class="api-input-group">
+                    <input type="password" id="api-key" class="api-input" placeholder="Paste Z.ai or OpenAI Key here">
+                </div>
+                <p style="font-size: 0.75rem; color: #888; margin-top: 5px;">
+                    Key is stored locally in your browser. Never uploaded to our servers.
+                </p>
+            </div>
+
+            <!-- Step 2: Resume -->
+            <div class="config-group">
+                <label>2. Your Current CV</label>
+                <input type="file" id="cv-upload" accept=".pdf,.docx" style="display:none">
+                <button class="btn btn-outline full-width" onclick="document.getElementById('cv-upload').click()">
+                    <i data-lucide="upload"></i> Upload PDF/DOCX
+                </button>
+                <p id="filename" style="font-size: 0.8rem; margin-top: 5px; color: var(--success); display: none;">File Loaded ✓</p>
+            </div>
+
+            <!-- Step 3: Job Description -->
+            <div class="config-group">
+                <label>3. Target Job Description</label>
+                <textarea id="jd-input" class="pro-input" placeholder="Paste the full job description here to let the AI optimize your resume..."></textarea>
+            </div>
+
+            <!-- Generate -->
+            <button id="generate-btn" class="generate-btn" onclick="generateProCV()">
+                <i data-lucide="sparkles"></i> GENERATE PERFECT CV
+            </button>
+
+            <!-- Download -->
+            <button class="btn btn-primary full-width" onclick="downloadPDF()" style="margin-top: 20px;">
+                <i data-lucide="download"></i> Download PDF
+            </button>
+        </aside>
+
+        <!-- PREVIEW AREA -->
+        <main class="preview-area">
+            
+            <!-- Loading Screen -->
+            <div id="pro-loader" class="pro-loader">
+                <div class="spinner-gold"></div>
+                <h2>AI is rewriting your CV...</h2>
+                <div id="status-log" class="status-log">Initializing...</div>
+            </div>
+
+            <!-- The Document -->
+            <div id="resume-paper" class="resume-paper">
+                
+                <!-- HEADER -->
+                <div class="tpl-header">
+                    <div class="tpl-name" id="out-name">YOUR NAME</div>
+                    <div class="tpl-role" id="out-title">TARGET JOB TITLE</div>
+                    <div class="tpl-contact" id="out-contact">
+                        <span>email@example.com</span> | <span>123-456-7890</span> | <span>City, Country</span>
+                    </div>
+                </div>
+
+                <!-- BODY -->
+                <div class="tpl-body">
+                    <!-- Left Column -->
+                    <div class="tpl-left">
+                        <div class="tpl-section">
+                            <div class="tpl-heading">Professional Profile</div>
+                            <p id="out-summary">Your AI-optimized professional summary will appear here, tailored specifically to the job description you provided.</p>
+                        </div>
+
+                        <div class="tpl-section">
+                            <div class="tpl-heading">Experience</div>
+                            <div id="out-experience">
+                                <!-- Dynamic Jobs -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="tpl-right">
+                        <div class="tpl-section">
+                            <div class="tpl-heading">Education</div>
+                            <div id="out-education">
+                                <!-- Dynamic Edu -->
+                            </div>
+                        </div>
+
+                        <div class="tpl-section">
+                            <div class="tpl-heading">Skills</div>
+                            <div id="out-skills">
+                                <!-- Dynamic Skills -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="ai-pro.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
