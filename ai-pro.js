@@ -1,9 +1,6 @@
 // --- CONFIGURATION ---
-// Standard OpenAI Completion Endpoint (Often compatible with Z.ai/others)
-// If Z.ai uses a different URL, change this line.
-const API_URL = "https://api.z.ai/v1/chat/completions"; 
-// Note: If Z.ai is strictly a wrapper, this endpoint might be different.
-// Since I cannot verify Z.ai documentation, I am using the standard Chat Completion Format.
+const API_URL = "https://api.z.ai/api/paas/v4/chat/completions";
+const MODEL_ID = "glm-5"; 
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = '//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
@@ -17,13 +14,19 @@ document.getElementById('cv-upload').addEventListener('change', async (e) => {
     document.getElementById('filename').style.display = 'block';
     document.getElementById('filename').innerText = "Reading " + file.name + "...";
 
-    if (file.type.includes('pdf')) {
-        rawCVText = await extractTextFromPDF(file);
-    } else {
-        rawCVText = await extractTextFromDocx(file);
+    try {
+        if (file.type.includes('pdf')) {
+            rawCVText = await extractTextFromPDF(file);
+        } else {
+            rawCVText = await extractTextFromDocx(file);
+        }
+        document.getElementById('filename').innerText = file.name + " Loaded ✓";
+        document.getElementById('filename').style.color = "green";
+    } catch (err) {
+        console.error(err);
+        document.getElementById('filename').innerText = "Error reading file";
+        document.getElementById('filename').style.color = "red";
     }
-    
-    document.getElementById('filename').innerText = file.name + " Loaded ✓";
 });
 
 async function extractTextFromPDF(file) {
@@ -57,57 +60,57 @@ async function generateProCV() {
     const loader = document.getElementById('pro-loader');
     const log = document.getElementById('status-log');
     loader.style.display = 'flex';
-    log.innerText = "Constructing Prompt...";
+    log.innerText = "Initializing Z.AI (GLM-5)...";
 
-    // Construct the Prompt
-    const systemPrompt = `You are an expert Resume Writer and ATS Optimizer. 
-    You will receive a user's current CV text and a target Job Description. 
-    Your goal is to rewrite the CV to perfectly match the Job Description.
+    // Strict JSON Prompt
+    const systemPrompt = `You are an expert Resume Writer. Your task is to rewrite a user's CV to perfectly match a target Job Description.
     
-    RULES:
-    1. Use professional, action-oriented language.
-    2. Optimize for ATS keywords found in the Job Description.
-    3. Return ONLY valid JSON data. No markdown, no explanations.
-    
-    JSON STRUCTURE:
+    CRITICAL INSTRUCTIONS:
+    1. Output ONLY valid JSON. No markdown, no intro text.
+    2. Rewrite the Summary to be 3 sentences long, using keywords from the JD.
+    3. Rewrite Experience bullets to start with strong action verbs (Achieved, Led, Developed).
+    4. Ensure the JSON structure exactly matches the format below.
+
+    JSON FORMAT:
     {
         "fullName": "String",
-        "currentJobTitle": "String (Target Role)",
+        "currentJobTitle": "String",
         "email": "String",
         "phone": "String",
         "location": "String",
-        "summary": "String (3-4 sentences optimized for the role)",
-        "skills": ["Array", "of", "Strings", "Top 10 Skills"],
+        "summary": "String",
+        "skills": ["Skill 1", "Skill 2", "Skill 3", "Skill 4", "Skill 5", "Skill 6"],
         "experience": [
             {
-                "title": "String",
-                "company": "String",
-                "date": "String",
-                "bullets": ["Array", "of", "Optimized", "Bullet", "Points"]
+                "title": "Job Title",
+                "company": "Company Name",
+                "date": "Date Range",
+                "bullets": ["Bullet 1", "Bullet 2", "Bullet 3"]
             }
         ],
         "education": [
             {
-                "school": "String",
-                "degree": "String",
-                "date": "String"
+                "school": "University Name",
+                "degree": "Degree Title",
+                "date": "Graduation Year"
             }
         ]
     }`;
 
-    const userMessage = `CURRENT CV:\n${rawCVText}\n\nTARGET JOB DESCRIPTION:\n${jdText}`;
+    const userMessage = `CURRENT CV:\n${rawCVText.substring(0, 3000)}\n\nTARGET JOB DESCRIPTION:\n${jdText.substring(0, 2000)}`;
 
-    log.innerText = "Sending to AI Engine...";
+    log.innerText = "Sending request to Z.AI...";
 
     try {
         const response = await fetch(API_URL, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${apiKey}`
+                "Authorization": `Bearer ${apiKey}`,
+                "Accept-Language": "en-US,en"
             },
             body: JSON.stringify({
-                model: "gpt-3.5-turbo", // Or appropriate Z.ai model string
+                model: MODEL_ID,
                 messages: [
                     { role: "system", content: systemPrompt },
                     { role: "user", content: userMessage }
@@ -117,17 +120,16 @@ async function generateProCV() {
         });
 
         if (!response.ok) {
-            const err = await response.text();
-            throw new Error("API Error: " + err);
+            const errText = await response.text();
+            throw new Error(`API Error ${response.status}: ${errText}`);
         }
 
         log.innerText = "Processing Response...";
         const data = await response.json();
         
-        // Extract JSON from the response content
         let content = data.choices[0].message.content;
         
-        // Clean cleanup if MD code blocks exist
+        // Sanitize JSON (Remove markdown code blocks if AI adds them)
         content = content.replace(/```json/g, '').replace(/```/g, '').trim();
         
         const cvData = JSON.parse(content);
@@ -138,7 +140,7 @@ async function generateProCV() {
 
     } catch (error) {
         console.error(error);
-        alert("Generation Failed: " + error.message);
+        alert("Generation Failed:\n" + error.message);
         loader.style.display = 'none';
     }
 }
@@ -147,12 +149,10 @@ async function generateProCV() {
 function renderCV(data) {
     // Header
     document.getElementById('out-name').innerText = data.fullName || "Your Name";
-    document.getElementById('out-title').innerText = data.currentJobTitle || "Professional";
-    document.getElementById('out-contact').innerHTML = `
-        <span>${data.email || ''}</span> | 
-        <span>${data.phone || ''}</span> | 
-        <span>${data.location || ''}</span>
-    `;
+    document.getElementById('out-title').innerText = data.currentJobTitle || "Professional Title";
+    
+    const contactParts = [data.email, data.phone, data.location].filter(Boolean);
+    document.getElementById('out-contact').innerHTML = contactParts.join(' <span style="color:#ffd700">•</span> ');
 
     // Summary
     document.getElementById('out-summary').innerText = data.summary || "";
@@ -161,7 +161,7 @@ function renderCV(data) {
     const skillsContainer = document.getElementById('out-skills');
     skillsContainer.innerHTML = '';
     if (data.skills && Array.isArray(data.skills)) {
-        data.skills.forEach(skill => {
+        data.skills.slice(0, 12).forEach(skill => {
             const span = document.createElement('span');
             span.className = 'tpl-skill-tag';
             span.innerText = skill;
@@ -177,7 +177,6 @@ function renderCV(data) {
             const div = document.createElement('div');
             div.className = 'tpl-job';
             
-            // Build bullets
             const bulletsHtml = job.bullets.map(b => `<li>${b}</li>`).join('');
 
             div.innerHTML = `
@@ -216,7 +215,7 @@ function downloadPDF() {
     const element = document.getElementById('resume-paper');
     const opt = {
         margin: 0,
-        filename: 'AI-Perfect-CV.pdf',
+        filename: 'AI-Pro-CV.pdf',
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
