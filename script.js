@@ -5,7 +5,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '//cdnjs.cloudflare.com/ajax/libs/pdf.j
 const state = {
     experience: [],
     education: [],
-    custom: [] // New custom section state
+    custom: [] // Ensures custom array exists
 };
 
 // --- NAVIGATION ---
@@ -16,18 +16,19 @@ function showPage(pageId) {
 }
 
 function switchTab(tabName) {
+    // Hide all sections
     document.querySelectorAll('.form-section').forEach(el => el.classList.remove('active'));
+    
+    // Deactivate all tabs
     document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-    document.getElementById(`tab-${tabName}`).classList.add('active');
     
-    // Highlight button hack
-    const buttons = document.querySelectorAll('.tab');
-    buttons.forEach(btn => btn.classList.remove('active'));
+    // Show target section
+    const targetSection = document.getElementById(`tab-${tabName}`);
+    if (targetSection) targetSection.classList.add('active');
     
-    if(tabName === 'personal') buttons[0].classList.add('active');
-    if(tabName === 'experience') buttons[1].classList.add('active');
-    if(tabName === 'education') buttons[2].classList.add('active');
-    if(tabName === 'custom') buttons[3].classList.add('active');
+    // Activate target tab button
+    const targetBtn = document.querySelector(`.tab[data-target="${tabName}"]`);
+    if (targetBtn) targetBtn.classList.add('active');
 }
 
 // --- FILE UPLOAD & PARSING ---
@@ -167,6 +168,7 @@ function removeExperience(id) {
 
 function renderExperienceInputs() {
     const container = document.getElementById('experience-list');
+    if (!container) return;
     container.innerHTML = '';
     state.experience.forEach(exp => {
         const div = document.createElement('div');
@@ -184,6 +186,7 @@ function renderExperienceInputs() {
 
 function renderExperiencePreview() {
     const container = document.getElementById('preview-experience-list');
+    if (!container) return;
     container.innerHTML = '';
     state.experience.forEach(exp => {
         const div = document.createElement('div');
@@ -221,6 +224,7 @@ function removeEducation(id) {
 
 function renderEducationInputs() {
     const container = document.getElementById('education-list');
+    if (!container) return;
     container.innerHTML = '';
     state.education.forEach(edu => {
         const div = document.createElement('div');
@@ -237,6 +241,7 @@ function renderEducationInputs() {
 
 function renderEducationPreview() {
     const container = document.getElementById('preview-education-list');
+    if (!container) return;
     container.innerHTML = '';
     state.education.forEach(edu => {
         if(!edu.school) return;
@@ -252,12 +257,19 @@ function renderEducationPreview() {
 
 // --- CUSTOM SECTION LOGIC ---
 function updateCustomTitle() {
-    const title = document.getElementById('input-custom-title').value || 'Projects';
-    document.getElementById('preview-custom-title').innerText = title;
+    const input = document.getElementById('input-custom-title');
+    const previewTitle = document.getElementById('preview-custom-title');
+    const sectionCustom = document.getElementById('section-custom');
+
+    // Safety checks
+    if (!input || !previewTitle || !sectionCustom) return;
+
+    const title = input.value || 'Projects';
+    previewTitle.innerText = title;
     
     // Hide section if empty title and list
     const hasItems = state.custom.length > 0;
-    document.getElementById('section-custom').style.display = hasItems ? 'block' : 'none';
+    sectionCustom.style.display = hasItems ? 'block' : 'none';
 }
 
 function addCustomItem() {
@@ -285,14 +297,24 @@ function removeCustomItem(id) {
 
 function renderCustomInputs() {
     const container = document.getElementById('custom-list');
+    if (!container) return; // Safety check
+    
     container.innerHTML = '';
     state.custom.forEach(item => {
         const div = document.createElement('div');
         div.className = 'item-card';
         div.innerHTML = `
-            <div class="form-group"><input type="text" placeholder="Item Title (e.g. Portfolio Website)" value="${item.title}" oninput="updateCustomItem(${item.id}, 'title', this.value)"></div>
-            <div class="form-group"><textarea placeholder="Description or Details..." rows="2" oninput="updateCustomItem(${item.id}, 'desc', this.value)">${item.desc}</textarea></div>
-            <button class="btn btn-outline small" onclick="removeCustomItem(${item.id})" style="color: red; border-color: red;">Remove</button>
+            <div class="form-group">
+                <input type="text" placeholder="Item Title (e.g. Portfolio Website)" 
+                       value="${item.title}" 
+                       oninput="updateCustomItem(${item.id}, 'title', this.value)">
+            </div>
+            <div class="form-group">
+                <textarea placeholder="Description or Details..." rows="2" 
+                          oninput="updateCustomItem(${item.id}, 'desc', this.value)">${item.desc}</textarea>
+            </div>
+            <button class="btn btn-outline small" onclick="removeCustomItem(${item.id})" 
+                    style="color: red; border-color: red;">Remove</button>
         `;
         container.appendChild(div);
     });
@@ -300,6 +322,8 @@ function renderCustomInputs() {
 
 function renderCustomPreview() {
     const container = document.getElementById('preview-custom-list');
+    if (!container) return; // Safety check
+
     container.innerHTML = '';
     state.custom.forEach(item => {
         const div = document.createElement('div');
@@ -342,29 +366,41 @@ function saveData() {
 function loadData() {
     const saved = localStorage.getItem('cvData');
     if(!saved) return;
-    const data = JSON.parse(saved);
-    for (const [key, value] of Object.entries(data)) {
-        if(key === 'experience' || key === 'education' || key === 'custom') continue;
-        const el = document.getElementById(key);
-        if(el) el.value = value;
+    
+    try {
+        const data = JSON.parse(saved);
+        
+        // Restore Text Inputs
+        for (const [key, value] of Object.entries(data)) {
+            if(key === 'experience' || key === 'education' || key === 'custom') continue;
+            const el = document.getElementById(key);
+            if(el) el.value = value;
+        }
+
+        // Restore Arrays
+        if(Array.isArray(data.experience)) {
+            state.experience = data.experience;
+            renderExperienceInputs();
+            renderExperiencePreview();
+        }
+        if(Array.isArray(data.education)) {
+            state.education = data.education;
+            renderEducationInputs();
+            renderEducationPreview();
+        }
+        if(Array.isArray(data.custom)) {
+            state.custom = data.custom;
+            renderCustomInputs();
+            renderCustomPreview();
+            // Need to wait for DOM elements to exist if calling immediately
+            setTimeout(updateCustomTitle, 0); 
+        }
+        
+        updatePreview();
+    } catch(e) {
+        console.error("Error loading data", e);
     }
-    if(data.experience) {
-        state.experience = data.experience;
-        renderExperienceInputs();
-        renderExperiencePreview();
-    }
-    if(data.education) {
-        state.education = data.education;
-        renderEducationInputs();
-        renderEducationPreview();
-    }
-    if(data.custom) {
-        state.custom = data.custom;
-        renderCustomInputs();
-        renderCustomPreview();
-        updateCustomTitle();
-    }
-    updatePreview();
 }
 
+// Load data on startup
 window.addEventListener('DOMContentLoaded', loadData);
