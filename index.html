@@ -13,8 +13,10 @@
     <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- PDF Generation Library -->
+    <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 
     <!-- Styles -->
     <link rel="stylesheet" href="style.css">
@@ -33,6 +35,9 @@
         </div>
     </header>
 
+    <!-- Hidden File Input -->
+    <input type="file" id="cv-upload" accept=".pdf,.docx" style="display: none;" onchange="handleFileUpload(this)">
+
     <!-- PAGE: LANDING (Home) -->
     <main id="page-home">
         <section class="hero">
@@ -41,12 +46,14 @@
                     <h1>Build your <span style="color: var(--secondary);">perfect</span> CV</h1>
                     <p>Create a new standout CV in minutes. No sign-up required. Completely free.</p>
                     <div class="btn-group">
-                        <button class="btn btn-primary" onclick="showPage('builder')">Start a new CV</button>
+                        <button class="btn btn-primary" onclick="showPage('builder')">Start New CV</button>
+                        <button class="btn btn-outline" onclick="document.getElementById('cv-upload').click()">
+                            <i data-lucide="upload"></i> Upload CV & Revamp
+                        </button>
                     </div>
                     <div class="badge">✨ AI-supported formatting</div>
                 </div>
                 <div class="hero-visual">
-                    <!-- CSS Resume Visual -->
                     <div class="mini-cv-visual">
                         <div class="cv-header"></div>
                         <div class="cv-body">
@@ -59,6 +66,12 @@
                 </div>
             </div>
         </section>
+
+        <!-- Loader Overlay -->
+        <div id="loader" class="loader-overlay" style="display: none;">
+            <div class="spinner"></div>
+            <p>Analyzing your CV...</p>
+        </div>
 
         <section class="features">
             <div class="container">
@@ -91,7 +104,12 @@
             <!-- LEFT: EDITOR -->
             <div class="editor-panel">
                 <div class="editor-header">
-                    <h2>Edit your CV</h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2>Edit your CV</h2>
+                        <button class="btn btn-outline small" onclick="document.getElementById('cv-upload').click()">
+                            <i data-lucide="upload" style="width: 14px;"></i> Upload
+                        </button>
+                    </div>
                     <div class="tabs">
                         <button class="tab active" onclick="switchTab('personal')">Personal</button>
                         <button class="tab" onclick="switchTab('experience')">Experience</button>
@@ -132,18 +150,14 @@
                 <!-- Tab: Experience -->
                 <div id="tab-experience" class="form-section">
                     <h3>Work History</h3>
-                    <div id="experience-list">
-                        <!-- JS will inject items here -->
-                    </div>
+                    <div id="experience-list"></div>
                     <button class="btn btn-outline small" onclick="addExperience()">+ Add Job</button>
                 </div>
 
                 <!-- Tab: Education -->
                 <div id="tab-education" class="form-section">
                     <h3>Education</h3>
-                    <div id="education-list">
-                        <!-- JS will inject items here -->
-                    </div>
+                    <div id="education-list"></div>
                     <button class="btn btn-outline small" onclick="addEducation()">+ Add School</button>
                 </div>
 
@@ -182,17 +196,13 @@
                     <!-- Experience -->
                     <div class="cv-section">
                         <h3 class="cv-heading">Work Experience</h3>
-                        <div id="preview-experience-list">
-                            <!-- Dynamic Content -->
-                        </div>
+                        <div id="preview-experience-list"></div>
                     </div>
 
                     <!-- Education -->
                     <div class="cv-section">
                         <h3 class="cv-heading">Education</h3>
-                        <div id="preview-education-list">
-                            <!-- Dynamic Content -->
-                        </div>
+                        <div id="preview-education-list"></div>
                     </div>
                 </div>
             </div>
@@ -206,7 +216,6 @@
     <!-- Logic -->
     <script src="script.js"></script>
     <script>
-        // Initialize Icons
         lucide.createIcons();
     </script>
 </body>
