@@ -460,9 +460,9 @@ footer span{color:var(--flame);font-weight:700}
             <h1 id="p-name">Your Name</h1>
             <h2 id="p-ttl">Professional Title</h2>
             <div class="cvc">
-              <span id="p-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="ee8b838f8782ae8b968f839e828bc08d8183">[email&#160;protected]</a></span>
-              <span id="p-phone">Phone</span>
-              <span id="p-loc">Location</span>
+              <span id="p-email"></span>
+              <span id="p-phone"></span>
+              <span id="p-loc"></span>
               <span id="p-li"></span>
             </div>
           </div>
@@ -554,7 +554,7 @@ footer span{color:var(--flame);font-weight:700}
       <div class="ebanner" id="t-err"><span id="t-errtxt">Error.</span></div>
 
       <div class="sstep" style="border:none;padding-top:0">
-        <button id="t-gbtn" class="gbtn" onclick="tGen()" disabled>
+        <button id="t-gbtn" class="gbtn" onclick="runTailor()" disabled>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
           </svg>
@@ -642,7 +642,7 @@ footer span{color:var(--flame);font-weight:700}
 
 <!-- ══════════════════════════════
      ATS CHECKER
-══════════════════════════════ -->
+═══════════════════════════════════ -->
 <div id="view-ats" class="view">
   <input type="file" id="ats-file" accept=".pdf,.docx" style="display:none" onchange="atsUp(this)">
   <div class="atspage">
@@ -697,8 +697,8 @@ footer span{color:var(--flame);font-weight:700}
 
 <!-- ══════════════════════════════
      ALL SCRIPTS
-══════════════════════════════ -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+═══════════════════════════════════ -->
+<script>
 // ── CONFIG ──────────────────────────────────
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -714,12 +714,18 @@ function go(v) {
   if (nb) nb.classList.add('on');
   window.scrollTo(0,0);
   if (v==='builder') { bLoadData(); setTimeout(bScale,60); }
+  if (v==='tailor') { setTimeout(tScale,60); }
 }
 
 // ═══════════════════════════════════════════
 // BUILDER STATE
 // ═══════════════════════════════════════════
 const BS = { exp:[], edu:[], cus:[] };
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 function bTab(name) {
   document.querySelectorAll('.tc').forEach(t=>t.classList.remove('on'));
@@ -736,7 +742,7 @@ function bLive() {
   s('p-email', g('b-email')||'');
   s('p-phone', g('b-phone')||'');
   s('p-loc',   g('b-loc')||'');
-  document.getElementById('p-li').innerText = g('b-li');
+  document.getElementById('p-li').innerHTML = g('b-li') ? '<a href="https://' + g('b-li').replace(/^https?:\/\//,'') + '" target="_blank">' + g('b-li') + '</a>' : '';
   const sumEl = document.getElementById('p-sum');
   if(sumEl) sumEl.innerText = g('b-sum');
   document.getElementById('p-sum-sec').style.display = g('b-sum') ? '' : 'none';
@@ -1098,7 +1104,7 @@ async function bDownload(){
 // ═══════════════════════════════════════════
 // AI TAILOR
 // ═══════════════════════════════════════════
-let tRaw='', tHasCV=false, tHasJD=false, tHasKey=false, tGen=null;
+let tRaw = '', tHasCV = false, tHasJD = false, tHasKey = false, tGeneratedData = null;
 
 document.getElementById('t-file').addEventListener('change',async e=>{
   const f=e.target.files[0];if(f)await tProc(f);
@@ -1165,7 +1171,8 @@ function tChk(){
   if(ok)tStat('Ready — hit Generate!','');
 }
 
-async function tGenerate(){
+// Main generate function - called from button
+async function runTailor(){
   tHideErr();
   const jd=document.getElementById('t-jd').value.trim().slice(0,4000);
   const cv=tRaw.slice(0,8000);
@@ -1179,7 +1186,7 @@ async function tGenerate(){
     tLS('ls3','done');tLS('ls4','act');
     tRenderCV(data);tRenderScore(data.matchScore||70);
     tLS('ls4','done');
-    tGen=data;
+    tGeneratedData = data;
     document.getElementById('t-dlbtn').disabled=false;
     document.getElementById('t-cpbtn').disabled=false;
     tStat('CV generated successfully!','');
@@ -1297,7 +1304,7 @@ async function tDL(){
   wrap.style.transform='none'; wrap.style.marginBottom='0';
   cvEl.style.minHeight='unset'; cvEl.style.width='794px';
   window.scrollTo(0,0);
-  const nm=(tGen?.name||'CV').replace(/\s+/g,'_');
+  const nm=(tGeneratedData?.name||'CV').replace(/\s+/g,'_');
   try{
     await html2pdf().set({
       margin:[0,0,0,0],
@@ -1322,7 +1329,7 @@ async function tDL(){
 }
 
 function tCopy(){
-  if(!tGen)return;const d=tGen;
+  if(!tGeneratedData)return;const d=tGeneratedData;
   let txt=`${d.name}\n${d.targetTitle}\n${d.email} | ${d.phone} | ${d.location}\n\nSUMMARY\n${d.summary}\n\nSKILLS\n${(d.skills||[]).map(s=>s.name).join(', ')}\n\nEXPERIENCE\n`;
   (d.experience||[]).forEach(j=>{txt+=`${j.title} — ${j.company} (${j.dates})\n`;(j.bullets||[]).forEach(b=>txt+=`  • ${b}\n`);txt+='\n';});
   txt+=`EDUCATION\n`;(d.education||[]).forEach(e=>txt+=`${e.degree}, ${e.school} (${e.year})\n`);
@@ -1347,9 +1354,6 @@ function tFriendly(e){
   if(m.includes('format'))return m;
   return `Error: ${m}`;
 }
-
-// Bind onclick for generate (avoids naming conflict with tGen variable)
-document.getElementById('t-gbtn').onclick = tGenerate;
 
 // ═══════════════════════════════════════════
 // ATS CHECKER
@@ -1429,3 +1433,6 @@ function topKws(text, n = 15) {
     .sort((a, b) => freq[b] - freq[a])
     .slice(0, n);
 }
+</script>
+</body>
+</html>
